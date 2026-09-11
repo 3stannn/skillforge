@@ -1,0 +1,30 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "SkillForge • URL-to-SKILL.md Engine",
+  description:
+    "Extract visual design system tokens and interactive logic from any website into an authoritative SKILL.md for Google Gemini, ChatGPT, Cursor, and Claude.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@8..144,-10..0,25..150,400..700,0..100&family=Google+Sans+Code:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen bg-white text-[#1f1f1f] antialiased flex flex-col selection:bg-[#1a73e8]/20 selection:text-[#1a73e8]">
+        <main className="flex-1">{children}</main>
+      </body>
+    </html>
+  );
+}
