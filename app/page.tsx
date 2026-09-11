@@ -50,25 +50,11 @@ export default function Home() {
       console.warn("Failed to read config from localStorage:", e);
     }
 
-    try {
-      const seen = sessionStorage.getItem("skillforge_seen_splash");
-      if (seen === "true") {
-        setShowSplash(false);
-      }
-    } catch (e) {
-      console.warn("Failed to read splash state:", e);
-    }
-
     fetchHistory();
   }, []);
 
   const handleDismissSplash = () => {
     setShowSplash(false);
-    try {
-      sessionStorage.setItem("skillforge_seen_splash", "true");
-    } catch (e) {
-      console.warn("Failed to write splash state:", e);
-    }
   };
 
   const saveConfig = (updated: ApiKeysConfig) => {
@@ -105,12 +91,18 @@ export default function Home() {
     }
   };
 
-  const handleGenerateSkill = async (targetUrl: string) => {
+  const handleGenerateSkill = async (
+    targetUrl: string,
+    crawlOptions?: { crawlDepth: number; maxPages: number }
+  ) => {
     setIsGenerating(true);
     setCurrentStep(1);
     setActiveUrl(targetUrl);
     setGenerationError(null);
     setStepsLog([]);
+
+    const depth = crawlOptions?.crawlDepth ?? config.defaultCrawlDepth ?? 1;
+    const maxPages = crawlOptions?.maxPages ?? config.maxCrawlPages ?? 5;
 
     try {
       const response = await fetch("/api/generate-skill", {
@@ -123,6 +115,8 @@ export default function Home() {
           geminiApiKey: config.geminiApiKey,
           preferredLlm: config.preferredLlm,
           stream: true,
+          crawlDepth: depth,
+          maxPages,
         }),
       });
 
@@ -197,17 +191,17 @@ export default function Home() {
       )}
 
       {/* Consistent Unified Navbar */}
-      <header className="w-full h-16 sm:h-20 px-6 sm:px-12 flex items-center justify-between border-b border-[#dadce0]/70 bg-white/95 backdrop-blur-md sticky top-0 z-30">
+      <header className="w-full h-12 sm:h-14 px-4 sm:px-8 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-30">
         {/* Brand & Quick Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div
             onClick={() => setActiveSkill(null)}
-            className="flex items-center gap-2.5 cursor-pointer select-none group"
+            className="flex items-center gap-2 cursor-pointer select-none group"
           >
-            <span className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.035em] text-[#111111] group-hover:text-[#1a73e8] transition-colors">
+            <span className="text-base sm:text-lg font-semibold tracking-[-0.035em] text-[#111111] group-hover:text-[#1a73e8] transition-colors">
               SkillForge
             </span>
-            <span className="text-[10px] sm:text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#111111]/5 text-[#5f6368] border border-[#dadce0] font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#111111]/5 text-[#5f6368] border border-[#dadce0] font-medium">
               v1.0
             </span>
           </div>
@@ -216,7 +210,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setActiveSkill(null)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#111111] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-all cursor-pointer shadow-2xs"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-[#111111] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-all cursor-pointer shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-[#5f6368]" />
               <span className="hidden sm:inline">New Extraction</span>
@@ -225,12 +219,12 @@ export default function Home() {
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setShowSplash(true)}
             title="View Splash Screen"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-[#ffe432]" />
             <span>Splash</span>
@@ -238,7 +232,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
           >
             <History className="w-3.5 h-3.5 text-[#5f6368]" />
             <span>Saved Skills</span>
@@ -251,7 +245,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setIsConfigOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
           >
             <Sliders className="w-3.5 h-3.5 text-[#5f6368]" />
             <span>Settings</span>

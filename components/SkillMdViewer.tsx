@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Check, Palette, Cpu, Download, Eye, Code } from "lucide-react";
+import { Copy, Check, Palette, Cpu, Download, Eye, Code, Compass, ExternalLink } from "lucide-react";
 import { UniversalSkill } from "@/lib/types";
 import { MarkdownView } from "./MarkdownView";
 
@@ -10,7 +10,7 @@ export interface SkillMdViewerProps {
 }
 
 export function SkillMdViewer({ skill }: SkillMdViewerProps) {
-  const [activeTab, setActiveTab] = useState<"formatted" | "raw" | "styles" | "logic">("formatted");
+  const [activeTab, setActiveTab] = useState<"formatted" | "raw" | "styles" | "logic" | "pages">("formatted");
   const [copied, setCopied] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
@@ -89,6 +89,20 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
             <Cpu className="w-3.5 h-3.5 text-[#188038]" />
             <span>Logic ({skill.logic.stateVariables.length})</span>
           </button>
+          {skill.crawledPages && skill.crawledPages.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("pages")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                activeTab === "pages"
+                  ? "bg-white text-[#111111] shadow-xs border border-[#dadce0] font-semibold"
+                  : "text-[#5f6368] hover:text-[#111111] hover:bg-white/60"
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-[#1a73e8]" />
+              <span>Pages ({skill.crawledPages.length})</span>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -289,6 +303,76 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                     >
                       {ep}
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Pages & Architecture Tab */}
+        {activeTab === "pages" && skill.crawledPages && (
+          <div className="p-6 space-y-6 max-w-4xl mx-auto">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-[#111111] flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#1a73e8]" />
+                Crawled Site Architecture ({skill.crawledPages.length} pages)
+              </h3>
+              <p className="text-xs text-[#5f6368]">
+                Pages discovered and explored by the deep scraper to assemble this universal skill.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {skill.crawledPages.map((page, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-[#f8f9fa] rounded-xl border border-[#dadce0] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-[#1a73e8]/40 transition-colors"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-[#e8f0fe] text-[#1a73e8] text-[10px] font-mono font-semibold">
+                        Depth {page.depth}
+                      </span>
+                      <span className="text-xs font-semibold text-[#111111] truncate">
+                        {page.title}
+                      </span>
+                    </div>
+                    <a
+                      href={page.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] font-mono text-[#5f6368] hover:text-[#1a73e8] flex items-center gap-1 truncate"
+                    >
+                      {page.url} <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                    </a>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 text-xs font-mono text-[#5f6368]">
+                    <span>{page.wordCount.toLocaleString()} words</span>
+                    {page.statusCode && (
+                      <span className="px-2 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] text-emerald-700">
+                        HTTP {page.statusCode}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {skill.frameworks && skill.frameworks.length > 0 && (
+              <div className="pt-4 border-t border-[#dadce0] space-y-2">
+                <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368]">
+                  Detected Frameworks & Tech Stack
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {skill.frameworks.map((fw, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-[#dadce0] text-xs font-mono text-[#111111] shadow-2xs"
+                    >
+                      {fw}
+                    </span>
                   ))}
                 </div>
               </div>

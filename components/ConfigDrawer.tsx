@@ -94,6 +94,86 @@ export function ConfigDrawer({
           </div>
         </div>
 
+        {/* Deep Crawl & Exploration Settings */}
+        <div className="border-t border-[#dadce0] pt-4 space-y-3">
+          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368]">
+            Scraper Depth & Exploration
+          </label>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#202124] font-medium">Default Crawl Mode</span>
+              <span className="text-[#5f6368] font-mono text-[11px]">
+                {localConfig.defaultCrawlDepth === 0 ? "Single Page" : "Deep Multi-Page (Depth 1)"}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setLocalConfig((prev) => ({
+                    ...prev,
+                    defaultCrawlDepth: 1,
+                  }))
+                }
+                className={`px-3 py-2 rounded-lg border text-xs font-medium text-center transition-colors cursor-pointer ${
+                  (localConfig.defaultCrawlDepth ?? 1) > 0
+                    ? "bg-[#111111] border-[#111111] text-white font-semibold"
+                    : "bg-[#f1f3f4] border-[#dadce0] text-[#202124] hover:bg-[#e8eaed]"
+                }`}
+              >
+                Deep Multi-Page
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setLocalConfig((prev) => ({
+                    ...prev,
+                    defaultCrawlDepth: 0,
+                  }))
+                }
+                className={`px-3 py-2 rounded-lg border text-xs font-medium text-center transition-colors cursor-pointer ${
+                  localConfig.defaultCrawlDepth === 0
+                    ? "bg-[#111111] border-[#111111] text-white font-semibold"
+                    : "bg-[#f1f3f4] border-[#dadce0] text-[#202124] hover:bg-[#e8eaed]"
+                }`}
+              >
+                Single Page
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#202124] font-medium">Max Sub-Pages Cap</span>
+              <span className="font-mono text-[#1a73e8] font-bold text-xs">
+                {localConfig.maxCrawlPages ?? 5} pages
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[2, 4, 5, 8].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() =>
+                    setLocalConfig((prev) => ({
+                      ...prev,
+                      maxCrawlPages: num,
+                    }))
+                  }
+                  className={`py-1.5 rounded-lg border text-xs font-mono font-medium text-center transition-colors cursor-pointer ${
+                    (localConfig.maxCrawlPages ?? 5) === num
+                      ? "bg-[#1a73e8] border-[#1a73e8] text-white"
+                      : "bg-[#f1f3f4] border-[#dadce0] text-[#5f6368] hover:bg-[#e8eaed]"
+                  }`}
+                >
+                  {num} pages
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="border-t border-[#dadce0] pt-4 space-y-4">
           <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
             <Key className="w-3.5 h-3.5 text-[#5f6368]" />

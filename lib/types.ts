@@ -4,7 +4,25 @@ export interface ExtractedStyles {
   cssVariables: Record<string, string>;
   tailwindClasses: string[];
   layoutPatterns: string[];
+  animations?: string[];
+  shadows?: string[];
+  radii?: string[];
+  mediaQueries?: string[];
   rawStylesSummary?: string;
+}
+
+export interface ExtractedFormField {
+  name: string;
+  type: string;
+  required: boolean;
+  placeholder?: string;
+  pattern?: string;
+}
+
+export interface ExtractedForm {
+  action: string;
+  method: string;
+  fields: ExtractedFormField[];
 }
 
 export interface ExtractedLogic {
@@ -13,7 +31,31 @@ export interface ExtractedLogic {
   interactiveElements: string[];
   apiEndpoints: string[];
   formActions: string[];
+  forms?: ExtractedForm[];
+  frameworks?: string[];
+  navigationRoutes?: string[];
   rawLogicSummary?: string;
+}
+
+export interface CrawledPageSummary {
+  url: string;
+  title: string;
+  depth: number;
+  wordCount: number;
+  statusCode?: number;
+}
+
+export interface CrawlOptions {
+  crawlDepth?: number;
+  maxPages?: number;
+  fetchExternalCss?: boolean;
+  onProgress?: (update: {
+    current: number;
+    total: number;
+    currentUrl: string;
+    pageTitle?: string;
+    stage?: string;
+  }) => Promise<void> | void;
 }
 
 export interface ModelPrompts {
@@ -36,6 +78,8 @@ export interface UniversalSkill {
   modelPrompts: ModelPrompts;
   rawMarkdownSnippet?: string;
   createdAt?: string;
+  crawledPages?: CrawledPageSummary[];
+  frameworks?: string[];
 }
 
 export interface GenerationStepUpdate {
@@ -52,4 +96,7 @@ export interface ApiKeysConfig {
   geminiApiKey?: string;
   firecrawlApiKey?: string;
   preferredLlm: "groq" | "gemini" | "auto";
+  defaultCrawlDepth?: number;
+  maxCrawlPages?: number;
 }
+

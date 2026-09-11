@@ -16,6 +16,7 @@ import {
   Cpu,
   ArrowLeft,
   CheckCircle2,
+  Compass,
 } from "lucide-react";
 import { UniversalSkill } from "@/lib/types";
 
@@ -107,6 +108,17 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
               <Cpu className="w-3 h-3 text-[#5f6368]" />
               {skill.logic.stateVariables.length} States
             </span>
+            {skill.crawledPages && skill.crawledPages.length > 1 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#e6f4ea] text-[#137333] font-medium border border-[#34A853]/30">
+                <Compass className="w-3 h-3 text-[#137333]" />
+                {skill.crawledPages.length} Pages Crawled
+              </span>
+            )}
+            {skill.frameworks && skill.frameworks.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#f8f9fa] text-[#3c4043] font-medium border border-[#dadce0]">
+                {skill.frameworks.slice(0, 2).join(" + ")}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#fef7e0] text-[#b06000] font-medium border border-[#fbbc04]/30">
               Multi-Model
             </span>

@@ -14,6 +14,8 @@ interface GenerateSkillRequestBody {
   geminiApiKey?: string;
   preferredLlm?: "groq" | "gemini" | "auto";
   stream?: boolean;
+  crawlDepth?: number;
+  maxPages?: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -26,6 +28,8 @@ export async function POST(req: NextRequest) {
       geminiApiKey,
       preferredLlm = "auto",
       stream = true,
+      crawlDepth = 0,
+      maxPages = 5,
     } = body;
 
     if (!url || typeof url !== "string") {
@@ -56,23 +60,46 @@ export async function POST(req: NextRequest) {
 
       (async () => {
         try {
-          // STEP 1: Scraping target URL & extracting styles + scripts...
+          const isDeepCrawl = (crawlDepth ?? 0) > 0;
+
+          // STEP 1: Scraping target URL & exploring routes/stylesheets...
           await sendUpdate({
             step: 1,
             status: "active",
-            message: "Scraping target URL & extracting styles + scripts...",
-            details: firecrawlApiKey
+            message: isDeepCrawl
+              ? "Deep crawling website & mapping route architecture..."
+              : "Scraping target URL & extracting styles + scripts...",
+            details: isDeepCrawl
+              ? `Discovering internal routes, documentation, and external CSS (Depth: ${crawlDepth})...`
+              : firecrawlApiKey
               ? "Connecting via Firecrawl engine..."
               : "Analyzing HTML DOM, stylesheets, and scripts...",
           });
 
-          const scrapeResult = await scrapeTargetUrl(url, firecrawlApiKey);
+          const scrapeResult = await scrapeTargetUrl(url, firecrawlApiKey, {
+            crawlDepth,
+            maxPages,
+            fetchExternalCss: true,
+            onProgress: async (progress) => {
+              await sendUpdate({
+                step: 1,
+                status: "active",
+                message: isDeepCrawl
+                  ? `Deep crawling (${progress.current}/${progress.total} pages)...`
+                  : "Inspecting styles and logic...",
+                details: progress.stage || `Scanning ${progress.currentUrl}`,
+              });
+            },
+          });
 
+          const pagesCount = scrapeResult.crawledPages?.length || 1;
           await sendUpdate({
             step: 1,
             status: "completed",
-            message: "Page content, styles, and scripts retrieved",
-            details: `Found ${scrapeResult.styles.colors.length} color tokens, ${scrapeResult.styles.tailwindClasses.length} utility classes, and ${scrapeResult.logic.stateVariables.length} state items`,
+            message: isDeepCrawl
+              ? `Explored ${pagesCount} pages across site architecture`
+              : "Page content, styles, and scripts retrieved",
+            details: `Found ${scrapeResult.styles.colors.length} colors, ${scrapeResult.styles.tailwindClasses.length} utility classes, and ${scrapeResult.logic.frameworks?.join(", ") || "Vanilla Web"}`,
           });
 
           // STEP 2: Analyzing visual design system & interactive logic...
@@ -83,7 +110,7 @@ export async function POST(req: NextRequest) {
             details: "Formulating typography hierarchy, color palette, layout rules, and event flows...",
           });
 
-          await new Promise((r) => setTimeout(r, 400));
+          await new Promise((r) => setTimeout(r, 300));
 
           await sendUpdate({
             step: 2,
@@ -105,6 +132,14 @@ export async function POST(req: NextRequest) {
             geminiApiKey,
             preferredLlm,
           });
+
+          // Attach deep crawl metadata to response
+          if (scrapeResult.crawledPages && scrapeResult.crawledPages.length > 0) {
+            skillResponse.crawledPages = scrapeResult.crawledPages;
+          }
+          if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
+            skillResponse.frameworks = scrapeResult.logic.frameworks;
+          }
 
           await sendUpdate({
             step: 3,
@@ -173,12 +208,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Non-streaming fallback
-    const scrapeResult = await scrapeTargetUrl(url, firecrawlApiKey);
+    const scrapeResult = await scrapeTargetUrl(url, firecrawlApiKey, {
+      crawlDepth,
+      maxPages,
+      fetchExternalCss: true,
+    });
     const skillResponse = await generateUniversalSkill(scrapeResult, {
       groqApiKey,
       geminiApiKey,
       preferredLlm,
     });
+
+    if (scrapeResult.crawledPages && scrapeResult.crawledPages.length > 0) {
+      skillResponse.crawledPages = scrapeResult.crawledPages;
+    }
+    if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
+      skillResponse.frameworks = scrapeResult.logic.frameworks;
+    }
 
     try {
       const saved = await prisma.generatedSkill.create({

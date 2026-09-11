@@ -60,23 +60,23 @@ export function SplashScreen({ onDismiss }: SplashScreenProps) {
             className="w-full h-full flex flex-col justify-between bg-white text-[#1f1f1f] relative overflow-hidden select-none"
           >
             {/* Consistent Top Navigation Bar */}
-            <header className="relative z-20 w-full h-16 sm:h-20 px-6 sm:px-12 flex items-center justify-between border-b border-[#dadce0]/70 bg-white/95 backdrop-blur-md">
+            <header className="relative z-20 w-full h-12 sm:h-14 px-4 sm:px-8 flex items-center justify-between bg-white/95 backdrop-blur-md">
               {/* Brand Typography */}
-              <div className="flex items-center gap-2.5">
-                <span className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.035em] text-[#111111]">
+              <div className="flex items-center gap-2">
+                <span className="text-base sm:text-lg font-semibold tracking-[-0.035em] text-[#111111]">
                   SkillForge
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[#111111]/5 text-[#5f6368] border border-[#dadce0] font-medium">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#111111]/5 text-[#5f6368] border border-[#dadce0] font-medium">
                   v1.0
                 </span>
               </div>
 
               {/* Top Right Action */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleLaunch}
-                  className="px-5 py-2.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs sm:text-sm font-medium flex items-center gap-2 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="px-4 py-1.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-all hover:scale-102 active:scale-98 cursor-pointer"
                 >
                   <span>Launch SkillForge</span>
                   <ArrowRight className="w-3.5 h-3.5 opacity-80" />
