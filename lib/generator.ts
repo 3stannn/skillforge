@@ -14,6 +14,7 @@ Rules:
    - # Title & Overview
    - ## Discovered Site Architecture & Multi-Page Scope (if multiple pages were crawled)
    - ## Visual Design System & Styling Tokens (exact color codes, CSS variables, typography hierarchy, layout rules, Tailwind classes, and visual effects like glassmorphism, animations, or shadows)
+   - ## Detected Languages & Code Stacks (all detected programming languages, CLI environments, and code dialects found on the site, with implementation patterns)
    - ## Interactive Logic & State Architecture (state variables, event handlers, forms & validation rules, user interaction loops, and API contracts)
    - ## Production Implementation Guidelines
    - ## Multi-Model Directives (instructions for Gemini, ChatGPT, Cursor, Claude)
@@ -23,12 +24,14 @@ Rules:
    - "chatgpt": OpenAI Custom GPT Instructions
    - "cursor": .cursorrules / Windsurf Agent Rules format
    - "claude": Claude Project Instructions
+5. Detect, compile, and list all programming languages and environments discovered on the page in the "languages" array.
 
 You MUST return ONLY a valid JSON object with this exact structure:
 {
   "name": "snake_case_name",
   "title": "Human Readable Title",
   "description": "Comprehensive instruction-dense summary of when and how an AI model should apply this skill.",
+  "languages": ["TypeScript", "JavaScript", "Python"],
   "skillMd": "---...full markdown with YAML frontmatter...",
   "componentCode": "// Standalone React + Tailwind component TSX code...",
   "styles": {
@@ -145,6 +148,10 @@ function parseAndNormalizeOutput(
     rawMarkdownSnippet: scrapeResult.markdown.slice(0, 1500),
     crawledPages: scrapeResult.crawledPages,
     frameworks: scrapeResult.logic.frameworks,
+    languages:
+      Array.isArray(parsed.languages) && parsed.languages.length > 0
+        ? parsed.languages
+        : scrapeResult.languages || scrapeResult.logic.languages || [],
   };
 }
 
@@ -286,6 +293,23 @@ export default function ${compName}() {
               </div>
             </div>
           )}
+
+          {/* Detected Languages */}
+          {${JSON.stringify(scrapeResult.languages || scrapeResult.logic.languages || [])}.length > 0 && (
+            <div className="pt-2 border-t border-zinc-800/80">
+              <span className="text-[11px] text-zinc-400 block mb-1.5">Languages & CLI:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {${JSON.stringify(scrapeResult.languages || scrapeResult.logic.languages || [])}.map((lang, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/50 text-[10px] font-mono"
+                  >
+                    {lang}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* State & Logic Controller */}
@@ -358,7 +382,15 @@ export function buildFallbackSkillMd(
   const endpoints = scrapeResult.logic.apiEndpoints.slice(0, 8);
   const cssVars = Object.entries(scrapeResult.styles.cssVariables).slice(0, 10);
   const frameworks = scrapeResult.logic.frameworks || [];
+  const detectedLangs = scrapeResult.languages || scrapeResult.logic.languages || [];
   const crawled = scrapeResult.crawledPages || [];
+
+  let sectionNum = 2;
+  const siteArchSection = crawled.length > 1 ? `${sectionNum++}` : null;
+  const designTokensSection = `${sectionNum++}`;
+  const languagesSection = detectedLangs.length > 0 ? `${sectionNum++}` : null;
+  const logicSection = `${sectionNum++}`;
+  const directivesSection = `${sectionNum++}`;
 
   return `---
 name: ${name}
@@ -372,8 +404,7 @@ description: |
 
 > **Source URL**: [${scrapeResult.targetUrl}](${scrapeResult.targetUrl})  
 > **Extraction Engine**: SkillForge Multi-Model Synthesizer (Deep Crawl Engine)  
-${crawled.length > 1 ? `> **Crawled Scope**: ${crawled.length} pages across site architecture` : ""}
-
+${crawled.length > 1 ? `> **Crawled Scope**: ${crawled.length} pages across site architecture\n` : ""}${detectedLangs.length > 0 ? `> **Detected Languages**: ${detectedLangs.join(", ")}\n` : ""}
 ---
 
 ## 1. Executive Summary & Use Cases
@@ -382,13 +413,12 @@ Any modern AI model (Gemini, ChatGPT, Cursor, Claude) should use this specificat
 - Faithfully reproduce the component layout and user interaction flows.
 - Implement matching color palettes, typography scales, CSS variables, and Tailwind CSS utility rules.
 - Maintain consistent state transitions, form validation schemas, and asynchronous API contracts.
-${frameworks.length > 0 ? `- Align with detected architectural stack: **${frameworks.join(", ")}**.` : ""}
-
+${frameworks.length > 0 ? `- Align with detected architectural stack: **${frameworks.join(", ")}**.\n` : ""}${detectedLangs.length > 0 ? `- Apply code idioms for detected languages: **${detectedLangs.join(", ")}**.\n` : ""}
 ---
 
 ${
-  crawled.length > 1
-    ? `## 2. Discovered Site Architecture & Crawled Pages
+  siteArchSection
+    ? `## ${siteArchSection}. Discovered Site Architecture & Crawled Pages
 The deep scraper explored the following routes across the site:
 | Page Title | URL / Route | Depth | Word Count |
 | :--- | :--- | :---: | :---: |
@@ -398,7 +428,7 @@ ${crawled.map((p) => `| ${p.title.replace(/\|/g, "\\|")} | [\`${new URL(p.url).p
 `
     : ""
 }
-## ${crawled.length > 1 ? "3" : "2"}. Visual Design System & Styling Tokens
+## ${designTokensSection}. Visual Design System & Styling Tokens
 
 ### Color Palette
 | Token | Hex / HSL | Application |
@@ -432,7 +462,19 @@ ${scrapeResult.styles.animations && scrapeResult.styles.animations.length > 0 ? 
 
 ---
 
-## ${crawled.length > 1 ? "4" : "3"}. Interactive Logic & State Architecture
+${
+  languagesSection
+    ? `## ${languagesSection}. Detected Languages & Code Stacks
+The target application utilizes and references the following programming languages, CLI tooling, and dialects:
+| Language / Tooling | Ecosystem Role | Detection Source |
+| :--- | :--- | :--- |
+${detectedLangs.map((lang) => `| **${lang}** | Implementation & Examples | DOM / Markdown / Scripts |`).join("\n")}
+
+---
+`
+    : ""
+}
+## ${logicSection}. Interactive Logic & State Architecture
 
 ### Core State Variables
 ${
@@ -450,74 +492,116 @@ ${
 
 ${
   scrapeResult.logic.forms && scrapeResult.logic.forms.length > 0
-    ? `### Forms & Input Schemas
-${scrapeResult.logic.forms
-  .map(
-    (f, idx) => `#### Form ${idx + 1}: \`${f.method} ${f.action}\`
+    ? `\n### Forms & Input Schemas\n${scrapeResult.logic.forms
+        .map(
+          (f, idx) => `#### Form ${idx + 1}: \`${f.method} ${f.action}\`
 ${f.fields.map((fd) => `- \`${fd.name}\` (${fd.type})${fd.required ? " **[required]**" : ""}${fd.placeholder ? ` placeholder: "${fd.placeholder}"` : ""}`).join("\n")}`
-  )
-  .join("\n\n")}`
+        )
+        .join("\n\n")}\n`
     : ""
-}
-
-${endpoints.length > 0 ? `### Connected Endpoints & APIs\n${endpoints.map((ep) => `- \`${ep}\``).join("\n")}` : ""}
-
+}${endpoints.length > 0 ? `\n### Connected Endpoints & APIs\n${endpoints.map((ep) => `- \`${ep}\``).join("\n")}\n` : ""}
 ---
 
-## ${crawled.length > 1 ? "5" : "4"}. Universal AI Model Directives
+## ${directivesSection}. Universal AI Model Directives
 
 ### For Google Gemini
 - Ground code generation in the CSS variables and Tailwind classes documented above.
 - Ensure strict TypeScript typing and explicit component props interfaces.
-${frameworks.includes("Next.js") ? "- Use Next.js 15 App Router standards (React Server Components, server actions)." : ""}
-
+${frameworks.includes("Next.js") ? "- Use Next.js 15 App Router standards (React Server Components, server actions).\n" : ""}${detectedLangs.length > 0 ? `- Primary code languages to produce: ${detectedLangs.join(", ")}.\n` : ""}
 ### For OpenAI ChatGPT
 - Apply the color tokens and state machines when generating UI or backend handlers.
 - Prefer modular hooks for managing state variables.
-
+${detectedLangs.length > 0 ? `- Target implementation languages: ${detectedLangs.join(", ")}.\n` : ""}
 ### For Cursor & Windsurf
 - Reference this skill when generating pages or components within this workspace.
 - Adhere to the declared utility classes and avoid ad-hoc styling.
-
+${detectedLangs.length > 0 ? `- Format code blocks using syntax for: ${detectedLangs.join(", ")}.\n` : ""}
 ### For Anthropic Claude
-- Use the structural layout patterns and design constraints outlined in Section 2.
-`;
+- Use the structural layout patterns and design constraints outlined above.
+${detectedLangs.length > 0 ? `- Support idiomatic patterns for ${detectedLangs.join(", ")}.\n` : ""}`;
 }
 
 function buildGeminiPrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
+  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
+  const states =
+    scrapeResult.logic.stateVariables.length > 0
+      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
+      : "activeTab, query, isLoading";
+  const colors =
+    scrapeResult.styles.colors.length > 0
+      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
+      : "#1a73e8, #000000, #ffffff";
+  const tailwind =
+    scrapeResult.styles.tailwindClasses.length > 0
+      ? scrapeResult.styles.tailwindClasses.slice(0, 15).join(" ")
+      : "flex flex-col gap-4 text-zinc-100";
+
   return `You are a Senior Frontend Architect and Gemini Coding Assistant specialized in the "${name}" skill.
 When writing code or answering queries related to ${title || scrapeResult.targetUrl}:
-1. Use these primary colors: ${scrapeResult.styles.colors.slice(0, 5).join(", ")}.
-2. Use Tailwind utility classes matching: ${scrapeResult.styles.tailwindClasses.slice(0, 15).join(" ")}.
-3. Enforce the state management pattern: ${scrapeResult.logic.stateVariables.slice(0, 5).join(", ")}.
-${scrapeResult.logic.frameworks?.length ? `4. Target Frameworks: ${scrapeResult.logic.frameworks.join(", ")}.` : ""}
-5. Always produce clean, typed TypeScript and modern React components.`;
+1. Use these primary colors: ${colors}.
+2. Use Tailwind utility classes matching: ${tailwind}.
+3. Enforce the state management pattern: ${states}.
+${scrapeResult.logic.frameworks?.length ? `4. Target Frameworks: ${scrapeResult.logic.frameworks.join(", ")}.\n` : ""}${langs.length ? `5. Code Languages & Dialects: ${langs.join(", ")}.\n` : ""}6. Always produce clean, typed TypeScript and modern React components.`;
 }
 
 function buildChatGptPrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
+  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
+  const colors =
+    scrapeResult.styles.colors.length > 0
+      ? scrapeResult.styles.colors.slice(0, 4).join(", ")
+      : "#1a73e8, #000000, #ffffff";
+  const events =
+    scrapeResult.logic.eventHandlers.length > 0
+      ? scrapeResult.logic.eventHandlers.slice(0, 4).join(", ")
+      : "onSubmit(), onFilterChange(), onReset()";
+
   return `Role: Expert UI/UX & Full-Stack Engineer implementing ${title}.
 Instructions:
 - Maintain strict design fidelity with ${scrapeResult.targetUrl}.
-- Primary palette: ${scrapeResult.styles.colors.slice(0, 4).join(", ")}.
-- Ensure all interactive handlers (${scrapeResult.logic.eventHandlers.slice(0, 4).join(", ")}) handle loading and error boundaries gracefully.`;
+- Primary palette: ${colors}.
+${langs.length ? `- Supported Languages & Tooling: ${langs.join(", ")}.\n` : ""}- Ensure all interactive handlers (${events}) handle loading and error boundaries gracefully.`;
 }
 
 function buildCursorRules(name: string, title: string, scrapeResult: ScrapeResult): string {
+  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
+  const states =
+    scrapeResult.logic.stateVariables.length > 0
+      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
+      : "activeTab, query, isLoading";
+  const colors =
+    scrapeResult.styles.colors.length > 0
+      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
+      : "#1a73e8, #000000, #ffffff";
+  const tailwind =
+    scrapeResult.styles.tailwindClasses.length > 0
+      ? scrapeResult.styles.tailwindClasses.slice(0, 10).join(" ")
+      : "flex flex-col gap-4";
+
   return `# .cursorrules for ${name}
 # Source: ${scrapeResult.targetUrl}
 
-- Design System Colors: ${scrapeResult.styles.colors.slice(0, 5).join(", ")}
+- Design System Colors: ${colors}
 - Typography: ${scrapeResult.styles.fonts.join(", ") || "sans-serif"}
-- Core Layout Classes: ${scrapeResult.styles.tailwindClasses.slice(0, 10).join(" ")}
+${langs.length ? `- Languages & Dialects: ${langs.join(", ")}\n` : ""}- Core Layout Classes: ${tailwind}
 - When creating UI components matching ${title}, preserve this state flow:
-  ${scrapeResult.logic.stateVariables.slice(0, 5).join(", ")}
+  ${states}
 `;
 }
 
 function buildClaudePrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
+  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
+  const states =
+    scrapeResult.logic.stateVariables.length > 0
+      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
+      : "activeTab, query, isLoading";
+  const colors =
+    scrapeResult.styles.colors.length > 0
+      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
+      : "#1a73e8, #000000, #ffffff";
+
   return `You are an expert design systems engineer implementing features according to the ${name} specification.
-Reference the design tokens: ${scrapeResult.styles.colors.slice(0, 5).join(", ")}.
-Maintain the component state model: ${scrapeResult.logic.stateVariables.slice(0, 5).join(", ")}.
+Reference the design tokens: ${colors}.
+${langs.length ? `Implement code using idiomatic patterns for: ${langs.join(", ")}.\n` : ""}Maintain the component state model: ${states}.
 Implement complete, un-truncated React + Tailwind code.`;
 }
 
@@ -549,6 +633,7 @@ export function heuristicSynthesizeSkill(scrapeResult: ScrapeResult): UniversalS
     componentCode,
     styles: scrapeResult.styles,
     logic: scrapeResult.logic,
+    languages: scrapeResult.languages || scrapeResult.logic.languages || [],
     modelPrompts: {
       gemini: buildGeminiPrompt(name, title, scrapeResult),
       chatgpt: buildChatGptPrompt(name, title, scrapeResult),
@@ -596,6 +681,7 @@ export async function generateUniversalSkill(
 Page Title: ${scrapeResult.title || "Unknown"}
 Page Description: ${scrapeResult.description || "N/A"}
 Detected Frameworks & Libraries: ${frameworksText}
+Detected Programming Languages & Code Stacks: ${scrapeResult.languages?.join(", ") || scrapeResult.logic.languages?.join(", ") || "Standard Web (TypeScript, JavaScript, HTML, CSS)"}
 Crawled Site Architecture:
 ${crawledPagesText}
 

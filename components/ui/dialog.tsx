@@ -44,7 +44,7 @@ export function Dialog({
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -54,20 +54,20 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
-        className={`relative w-full ${widthClasses[maxWidth]} bg-white border border-[#dadce0] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col max-h-[90vh]`}
+        className={`relative w-full ${widthClasses[maxWidth]} bg-[#0a0b0e] border border-[#262930] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col max-h-[90vh] text-white`}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-[#dadce0]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#262930]">
           <div>
-            <h2 id="dialog-title" className="text-lg font-semibold text-[#111111]">
+            <h2 id="dialog-title" className="text-lg font-semibold text-white">
               {title}
             </h2>
             {description && (
-              <p className="text-xs sm:text-sm text-[#5f6368] mt-1">{description}</p>
+              <p className="text-xs sm:text-sm text-[#9aa0a6] mt-1">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#5f6368] hover:text-[#111111] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#9aa0a6] hover:text-white hover:bg-[#16181d] transition-colors cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />

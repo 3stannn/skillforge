@@ -19,6 +19,7 @@ export interface ScrapeResult {
   targetUrl: string;
   styles: ExtractedStyles;
   logic: ExtractedLogic;
+  languages?: string[];
   statusCode?: number;
   wordCount?: number;
   crawledPages?: CrawledPageSummary[];
@@ -282,6 +283,199 @@ export function detectFrameworks($: cheerio.CheerioAPI, rawHtml: string): string
 }
 
 /**
+ * Detects programming languages, CLI environments, and code block dialects
+ * from DOM pre/code tags, markdown fenced blocks, and script signatures.
+ */
+export function detectLanguages(
+  $: cheerio.CheerioAPI,
+  rawHtml: string,
+  markdown?: string
+): string[] {
+  const detected = new Set<string>();
+
+  const languageMap: Record<string, string> = {
+    ts: "TypeScript",
+    typescript: "TypeScript",
+    tsx: "TypeScript (TSX)",
+    js: "JavaScript",
+    javascript: "JavaScript",
+    jsx: "JavaScript (JSX)",
+    mjs: "JavaScript",
+    cjs: "JavaScript",
+    py: "Python",
+    python: "Python",
+    py3: "Python",
+    sh: "Bash / cURL",
+    bash: "Bash / cURL",
+    shell: "Bash / cURL",
+    zsh: "Bash / cURL",
+    curl: "Bash / cURL",
+    cli: "Bash / CLI",
+    go: "Go",
+    golang: "Go",
+    rs: "Rust",
+    rust: "Rust",
+    sql: "SQL",
+    mysql: "SQL (MySQL)",
+    postgresql: "SQL (PostgreSQL)",
+    postgres: "SQL (PostgreSQL)",
+    sqlite: "SQL (SQLite)",
+    json: "JSON",
+    jsonc: "JSON",
+    json5: "JSON",
+    yaml: "YAML",
+    yml: "YAML",
+    html: "HTML",
+    htm: "HTML",
+    css: "CSS",
+    scss: "SCSS",
+    sass: "Sass",
+    cpp: "C / C++",
+    "c++": "C / C++",
+    c: "C",
+    cs: "C# (.NET)",
+    csharp: "C# (.NET)",
+    dotnet: "C# (.NET)",
+    java: "Java",
+    kt: "Kotlin",
+    kotlin: "Kotlin",
+    swift: "Swift",
+    dart: "Dart",
+    flutter: "Dart / Flutter",
+    php: "PHP",
+    rb: "Ruby",
+    ruby: "Ruby",
+    docker: "Dockerfile",
+    dockerfile: "Dockerfile",
+    graphql: "GraphQL",
+    gql: "GraphQL",
+  };
+
+  // 1. Inspect <pre> and <code> elements for language classes and data attributes
+  $("pre, code").each((_, el) => {
+    const classAttr = ($(el).attr("class") || "").toLowerCase();
+    const dataLang = (
+      $(el).attr("data-language") ||
+      $(el).attr("data-lang") ||
+      $(el).attr("lang") ||
+      ""
+    ).toLowerCase();
+
+    const classMatch = classAttr.match(
+      /(?:language-|lang-|highlight-source-|brush:\s*|highlight-)([a-z0-9_#\+\-]+)/i
+    );
+    if (classMatch && classMatch[1]) {
+      const normalized = languageMap[classMatch[1].toLowerCase()];
+      if (normalized) detected.add(normalized);
+    }
+
+    if (dataLang) {
+      const normalized = languageMap[dataLang];
+      if (normalized) detected.add(normalized);
+    }
+  });
+
+  // 2. Inspect Markdown fenced code blocks (e.g. ```typescript ... ```)
+  if (markdown) {
+    const codeBlockMatches = markdown.matchAll(/```([a-zA-Z0-9_\+#\-]+)/g);
+    for (const match of codeBlockMatches) {
+      const raw = match[1].toLowerCase();
+      const normalized = languageMap[raw];
+      if (normalized) {
+        detected.add(normalized);
+      }
+    }
+  }
+
+  // 3. Inspect raw HTML script tags
+  $("script").each((_, el) => {
+    const type = ($(el).attr("type") || "").toLowerCase();
+    const src = ($(el).attr("src") || "").toLowerCase();
+
+    if (type.includes("typescript")) {
+      detected.add("TypeScript");
+    } else if (type.includes("json+ld") || type.includes("ld+json")) {
+      detected.add("JSON");
+    } else if (type === "module" || src.includes(".js") || src.includes("/_next/")) {
+      detected.add("JavaScript");
+    }
+  });
+
+  // 4. Content heuristics on code text
+  const codeTexts: string[] = [];
+  $("pre, code").each((_, el) => {
+    const text = $(el).text();
+    if (text.length > 20 && text.length < 2000) {
+      codeTexts.push(text);
+    }
+  });
+
+  const combinedCode = codeTexts.slice(0, 15).join("\n\n");
+  if (combinedCode) {
+    if (
+      /(?:def\s+[a-zA-Z0-9_]+\s*\(|import\s+[a-zA-Z0-9_]+|from\s+[a-zA-Z0-9_]+\s+import|if\s+__name__\s*==)/.test(
+        combinedCode
+      )
+    ) {
+      detected.add("Python");
+    }
+    if (
+      /(?:interface\s+[A-Z][a-zA-Z0-9_]*|type\s+[A-Z][a-zA-Z0-9_]*\s*=|:\s*(?:string|number|boolean|Record<|Promise<))/.test(
+        combinedCode
+      )
+    ) {
+      detected.add("TypeScript");
+    }
+    if (
+      /(?:curl\s+(?:-[a-zA-Z]|--[a-zA-Z]+)|npm\s+(?:install|i|run)|pnpm\s+(?:add|install)|yarn\s+add|pip\s+install|docker\s+run)/.test(
+        combinedCode
+      )
+    ) {
+      detected.add("Bash / cURL");
+    }
+    if (
+      /(?:func\s+[a-zA-Z0-9_]+\s*\(|package\s+[a-zA-Z0-9_]+|fmt\.Print)/.test(
+        combinedCode
+      )
+    ) {
+      detected.add("Go");
+    }
+    if (
+      /(?:fn\s+[a-zA-Z0-9_]+\s*\(|let\s+mut\s+|impl\s+[a-zA-Z0-9_]+|pub\s+struct\s+)/.test(
+        combinedCode
+      )
+    ) {
+      detected.add("Rust");
+    }
+    if (
+      /(?:SELECT\s+.+\s+FROM\s+|INSERT\s+INTO\s+|CREATE\s+TABLE\s+|UPDATE\s+.+\s+SET\s+)/i.test(
+        combinedCode
+      )
+    ) {
+      detected.add("SQL");
+    }
+  }
+
+  // Fallback: If no languages detected, default based on modern web tech detected
+  if (detected.size === 0) {
+    if (
+      rawHtml.includes("__NEXT_DATA__") ||
+      rawHtml.includes("/_next/") ||
+      rawHtml.includes("react")
+    ) {
+      detected.add("TypeScript");
+      detected.add("JavaScript");
+    } else {
+      detected.add("HTML");
+      detected.add("JavaScript");
+      detected.add("CSS");
+    }
+  }
+
+  return Array.from(detected);
+}
+
+/**
  * Extracts CSS tokens, colors, fonts, CSS variables, keyframes, shadows, and Tailwind utility classes
  */
 export function extractStylesFromHtml(
@@ -350,9 +544,16 @@ export function extractStylesFromHtml(
   // Regex for font families
   const fontMatches = combinedStyles.matchAll(/font-family\s*:\s*([^;}\n]+)/gi);
   for (const f of fontMatches) {
-    const cleanFont = f[1].trim().replace(/['"]/g, "");
-    if (cleanFont && !fontSet.has(cleanFont)) {
-      fontSet.add(cleanFont);
+    const families = f[1].split(",");
+    for (const rawFam of families) {
+      const cleanFont = rawFam.trim().replace(/['"]/g, "");
+      if (
+        cleanFont &&
+        !["inherit", "initial", "unset", "revert"].includes(cleanFont.toLowerCase()) &&
+        !fontSet.has(cleanFont)
+      ) {
+        fontSet.add(cleanFont);
+      }
     }
   }
 
@@ -452,7 +653,11 @@ export function extractStylesFromHtml(
 /**
  * Extracts JavaScript interaction logic, event handlers, scripts, forms, frameworks, and state variables
  */
-export function extractLogicFromHtml($: cheerio.CheerioAPI, rawHtml: string): ExtractedLogic {
+export function extractLogicFromHtml(
+  $: cheerio.CheerioAPI,
+  rawHtml: string,
+  markdown?: string
+): ExtractedLogic {
   const stateVariables = new Set<string>();
   const eventHandlers = new Set<string>();
   const interactiveElements = new Set<string>();
@@ -460,8 +665,9 @@ export function extractLogicFromHtml($: cheerio.CheerioAPI, rawHtml: string): Ex
   const formActions = new Set<string>();
   const extractedForms: ExtractedForm[] = [];
 
-  // 1. Detect Frameworks
+  // 1. Detect Frameworks & Programming Languages
   const frameworks = detectFrameworks($, rawHtml);
+  const languages = detectLanguages($, rawHtml, markdown);
 
   // 2. Extract interactive elements & event handlers
   $("[onclick], [onchange], [onsubmit], [onkeydown], [onkeyup], [oninput]").each((_, el) => {
@@ -595,7 +801,8 @@ export function extractLogicFromHtml($: cheerio.CheerioAPI, rawHtml: string): Ex
     formActions: Array.from(formActions).slice(0, 10),
     forms: extractedForms.slice(0, 8),
     frameworks,
-    rawLogicSummary: `Identified ${interactiveElements.size} interactive controls, ${stateVariables.size} state variables, and ${apiEndpoints.size} API endpoints.`,
+    languages,
+    rawLogicSummary: `Identified ${interactiveElements.size} interactive controls, ${stateVariables.size} state variables, ${apiEndpoints.size} API endpoints, and ${languages.length} code languages.`,
   };
 }
 
@@ -821,10 +1028,6 @@ export async function scrapeSinglePage(
     externalCss = await fetchExternalStylesheets($, url, 3);
   }
 
-  // Extract styles and logic
-  const styles = extractStylesFromHtml($, rawText, externalCss);
-  const logic = extractLogicFromHtml($, rawText);
-
   // Readability for clean article / markdown text
   let readableHtml = "";
   try {
@@ -846,12 +1049,17 @@ export async function scrapeSinglePage(
     markdown = turndown.turndown(readableHtml);
   } else {
     source = "local_cheerio";
-    $(
+    const $clone = cheerio.load(rawText);
+    $clone(
       "script, style, noscript, iframe, svg, nav, footer, header, [role='banner'], [role='navigation']"
     ).remove();
-    const mainContent = $("main, article, #content, .content, body").first().html() || "";
+    const mainContent = $clone("main, article, #content, .content, body").first().html() || "";
     markdown = turndown.turndown(mainContent);
   }
+
+  // Extract styles and logic with language detection
+  const styles = extractStylesFromHtml($, rawText, externalCss);
+  const logic = extractLogicFromHtml($, rawText, markdown);
 
   let enrichedMarkdown = `# ${pageTitle}\n\n`;
   enrichedMarkdown += `**Source URL**: ${url}\n`;
@@ -868,6 +1076,7 @@ export async function scrapeSinglePage(
     targetUrl: url,
     styles,
     logic,
+    languages: logic.languages,
     statusCode: response.status,
     wordCount: enrichedMarkdown.split(/\s+/).length,
     rawHtml: rawText,
@@ -904,6 +1113,8 @@ async function scrapeWithFirecrawl(
       body: JSON.stringify({
         url,
         formats: ["markdown", "html"],
+        onlyMainContent: true,
+        waitFor: 1000,
       }),
       signal: controller.signal,
     });
@@ -922,7 +1133,7 @@ async function scrapeWithFirecrawl(
     const $ = cheerio.load(html || "<div></div>");
     const externalCss = await fetchExternalStylesheets($, url, 2);
     const styles = extractStylesFromHtml($, html, externalCss);
-    const logic = extractLogicFromHtml($, html);
+    const logic = extractLogicFromHtml($, html, markdown);
 
     return {
       markdown: markdown || title,
@@ -932,6 +1143,7 @@ async function scrapeWithFirecrawl(
       targetUrl: url,
       styles,
       logic,
+      languages: logic.languages,
       statusCode: response.status,
       wordCount: markdown.split(/\s+/).length,
       rawHtml: html,
@@ -965,6 +1177,7 @@ export async function crawlWebsite(
     markdown: string;
     styles: ExtractedStyles;
     logic: ExtractedLogic;
+    languages?: string[];
   }> = [];
 
   let rootResult: ScrapeResult | null = null;
@@ -1005,6 +1218,7 @@ export async function crawlWebsite(
         markdown: pageResult.markdown,
         styles: pageResult.styles,
         logic: pageResult.logic,
+        languages: pageResult.languages || pageResult.logic.languages,
       });
 
       // If we can go deeper, extract internal links
@@ -1031,6 +1245,7 @@ export async function crawlWebsite(
   if (crawledPages.length <= 1) {
     return {
       ...rootResult,
+      languages: rootResult.languages || rootResult.logic.languages,
       crawledPages: [
         {
           url: rootResult.targetUrl,
@@ -1062,6 +1277,7 @@ export async function crawlWebsite(
   const allFormActions = new Set<string>();
   const allForms: ExtractedForm[] = [];
   const allFrameworks = new Set<string>();
+  const allLanguages = new Set<string>();
   const allNavigationRoutes = new Set<string>();
 
   for (const page of crawledPages) {
@@ -1086,6 +1302,8 @@ export async function crawlWebsite(
     page.logic.formActions.forEach((fa) => allFormActions.add(fa));
     page.logic.forms?.forEach((f) => allForms.push(f));
     page.logic.frameworks?.forEach((fw) => allFrameworks.add(fw));
+    page.logic.languages?.forEach((l) => allLanguages.add(l));
+    page.languages?.forEach((l) => allLanguages.add(l));
   }
 
   // Build aggregated hierarchical Markdown
@@ -1142,6 +1360,7 @@ export async function crawlWebsite(
     formActions: Array.from(allFormActions).slice(0, 15),
     forms: allForms.slice(0, 10),
     frameworks: Array.from(allFrameworks),
+    languages: Array.from(allLanguages),
     navigationRoutes: Array.from(allNavigationRoutes),
     rawLogicSummary: `Identified ${allInteractiveElements.size} interactive controls, ${allStateVars.size} state variables, ${allApiEndpoints.size} API endpoints, and ${allForms.length} forms across ${crawledPages.length} crawled pages.`,
   };
@@ -1154,6 +1373,7 @@ export async function crawlWebsite(
     targetUrl: rootUrl,
     styles: mergedStyles,
     logic: mergedLogic,
+    languages: Array.from(allLanguages),
     statusCode: rootResult.statusCode,
     wordCount: aggregatedMarkdown.split(/\s+/).length,
     crawledPages: crawledPages.map((p) => ({

@@ -40,7 +40,7 @@ export function Drawer({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+      className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -52,18 +52,18 @@ export function Drawer({
       >
         <div
           style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-          className={`w-screen ${widthClasses[width]} bg-white border-l border-[#dadce0] p-6 shadow-2xl flex flex-col`}
+          className={`w-screen ${widthClasses[width]} bg-[#0a0b0e] border-l border-[#262930] p-6 shadow-2xl flex flex-col text-white`}
         >
-          <div className="flex items-center justify-between pb-4 border-b border-[#dadce0]">
+          <div className="flex items-center justify-between pb-4 border-b border-[#262930]">
             <div>
-              <h2 className="text-lg font-semibold text-[#111111] tracking-tight">{title}</h2>
+              <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
               {description && (
-                <p className="text-xs text-[#5f6368] mt-0.5">{description}</p>
+                <p className="text-xs text-[#9aa0a6] mt-0.5">{description}</p>
               )}
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-[#5f6368] hover:text-[#111111] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
+              className="p-1.5 rounded-full text-[#9aa0a6] hover:text-white hover:bg-[#16181d] transition-colors cursor-pointer"
               aria-label="Close drawer"
             >
               <X className="w-5 h-5" />

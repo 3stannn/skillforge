@@ -86,21 +86,21 @@ export function UrlInputForm({
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
       className="w-full max-w-5xl mx-auto space-y-10 py-6 sm:py-12"
     >
-      {/* Hero Section (Matching Google Antigravity Clean Aesthetics) */}
+      {/* Hero Section (Google Antigravity Sleek Dark Aesthetics) */}
       <div className="text-center space-y-5">
         {/* Central Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-medium text-[#202124] bg-white border border-[#dadce0] shadow-xs transition-transform hover:scale-105">
-          <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-medium text-[#e8eaed] bg-[#121316] border border-[#262930] shadow-md transition-all hover:scale-105 hover:border-[#3186ff]/50">
+          <span className="w-2 h-2 rounded-full bg-[#3186ff] animate-pulse shadow-[0_0_8px_#3186ff]" />
           <span>SkillForge • Universal Skill Engine</span>
         </div>
 
         {/* Large Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-[68px] font-semibold text-[#111111] leading-[1.06] tracking-[-0.035em] max-w-4xl mx-auto">
-          Extract design tokens & logic into <span className="text-[#1a73e8]">SKILL.md</span>
+        <h1 className="text-4xl sm:text-6xl md:text-[68px] font-semibold text-[#ffffff] leading-[1.06] tracking-[-0.035em] max-w-4xl mx-auto">
+          Extract design tokens & logic into <span className="text-[#3186ff]">SKILL.md</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-sm sm:text-base md:text-lg text-[#5f6368] font-normal max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base md:text-lg text-[#9aa0a6] font-normal max-w-2xl mx-auto leading-relaxed">
           Deep crawls documentation, visual styles, external stylesheets, state flows, and APIs from any URL into an authoritative agent skill.
         </p>
       </div>
@@ -109,17 +109,17 @@ export function UrlInputForm({
       <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl mx-auto">
         {/* Scraper Mode Pill Selector */}
         <div className="flex items-center justify-center gap-2">
-          <div className="inline-flex items-center p-1 bg-[#f1f3f4] border border-[#dadce0] rounded-full text-xs shadow-2xs">
+          <div className="inline-flex items-center p-1 bg-[#121316] border border-[#262930] rounded-full text-xs shadow-2xs">
             <button
               type="button"
               onClick={() => setCrawlMode("deep")}
               className={`px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 crawlMode === "deep"
-                  ? "bg-white text-[#1a73e8] shadow-xs font-semibold"
-                  : "text-[#5f6368] hover:text-[#111111]"
+                  ? "bg-[#1e2026] text-[#3186ff] border border-[#3186ff]/30 shadow-xs font-semibold"
+                  : "text-[#9aa0a6] hover:text-white"
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-[#1a73e8]" />
+              <Compass className="w-3.5 h-3.5 text-[#3186ff]" />
               <span>Deep Crawl (Multi-Page)</span>
             </button>
             <button
@@ -127,19 +127,19 @@ export function UrlInputForm({
               onClick={() => setCrawlMode("single")}
               className={`px-3.5 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 crawlMode === "single"
-                  ? "bg-white text-[#111111] shadow-xs font-semibold"
-                  : "text-[#5f6368] hover:text-[#111111]"
+                  ? "bg-[#1e2026] text-white border border-[#262930] shadow-xs font-semibold"
+                  : "text-[#9aa0a6] hover:text-white"
               }`}
             >
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
+              <Zap className="w-3.5 h-3.5 text-[#ffe432]" />
               <span>Single Page (Fast)</span>
             </button>
           </div>
         </div>
 
         {/* Large Google Antigravity Search Pill Container */}
-        <div className="flex items-center gap-3 p-2 pl-6 bg-white border border-[#dadce0] shadow-xs hover:shadow-md focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 rounded-full transition-all">
-          <Globe className="w-5 h-5 text-[#5f6368] shrink-0" />
+        <div className="flex items-center gap-3 p-2 pl-6 bg-[#0a0b0e] border border-[#262930] shadow-xl hover:border-[#3c4043] focus-within:border-[#3186ff] focus-within:ring-4 focus-within:ring-[#1a73e8]/20 rounded-full transition-all">
+          <Globe className="w-5 h-5 text-[#9aa0a6] shrink-0" />
           <input
             type="text"
             value={url}
@@ -153,12 +153,12 @@ export function UrlInputForm({
                 : "https://antigravity.google or single page URL..."
             }
             disabled={isLoading}
-            className="w-full bg-transparent border-0 text-sm sm:text-base text-[#111111] placeholder-[#80868b] focus:outline-none focus:ring-0 font-mono py-1.5"
+            className="w-full bg-transparent border-0 text-sm sm:text-base text-white placeholder-[#5f6368] focus:outline-none focus:ring-0 font-mono py-1.5"
           />
           <button
             type="submit"
             disabled={isLoading || !url.trim()}
-            className="px-6 py-3 rounded-full bg-[#111111] hover:bg-black disabled:bg-[#dadce0] disabled:text-[#80868b] text-white text-sm font-medium flex items-center gap-2 shrink-0 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="px-6 py-3 rounded-full bg-[#ffffff] hover:bg-[#eff0f3] disabled:bg-[#1a1c22] disabled:text-[#5f6368] text-[#000000] text-sm font-semibold flex items-center gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <span>{isLoading ? "Synthesizing..." : crawlMode === "deep" ? "Deep Crawl" : "Extract Skill"}</span>
             <ArrowRight className="w-4 h-4" />
@@ -174,21 +174,21 @@ export function UrlInputForm({
 
         {/* Validation Error Banner */}
         {validationError && (
-          <div className="flex items-center gap-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 p-3 rounded-xl max-w-2xl mx-auto">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+          <div className="flex items-center gap-2 text-xs text-rose-200 bg-rose-950/40 border border-rose-800/60 p-3 rounded-xl max-w-2xl mx-auto">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{validationError}</span>
           </div>
         )}
 
         {/* Sample Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs text-[#5f6368]">
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs text-[#9aa0a6]">
           <span className="font-mono text-[11px]">Try samples:</span>
           {SAMPLE_URLS.map((sample) => (
             <button
               key={sample.name}
               type="button"
               onClick={() => selectSample(sample.url)}
-              className="px-3.5 py-1.5 rounded-full bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] border border-[#dadce0] transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#9aa0a6] hover:text-white border border-[#262930] hover:border-[#3186ff]/40 transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer"
             >
               <span>{sample.name}</span>
             </button>

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scrapeTargetUrl } from "@/lib/scraper";
 import { generateUniversalSkill } from "@/lib/generator";
-import { prisma } from "@/lib/db";
 import { GenerationStepUpdate } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -140,12 +139,16 @@ export async function POST(req: NextRequest) {
           if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
             skillResponse.frameworks = scrapeResult.logic.frameworks;
           }
+          const detectedLanguages = scrapeResult.languages || scrapeResult.logic.languages;
+          if (detectedLanguages && detectedLanguages.length > 0 && (!skillResponse.languages || skillResponse.languages.length === 0)) {
+            skillResponse.languages = detectedLanguages;
+          }
 
           await sendUpdate({
             step: 3,
             status: "completed",
             message: `Synthesized skill: "${skillResponse.name}"`,
-            details: `Complete with YAML frontmatter, design tokens, and logic rules`,
+            details: `Complete with YAML frontmatter, design tokens, and ${skillResponse.languages?.length || 0} detected languages`,
           });
 
           // STEP 4: Compiling component code & cross-model adapters...
@@ -155,28 +158,6 @@ export async function POST(req: NextRequest) {
             message: "Compiling component code & cross-model adapters...",
             details: "Building React + Tailwind TSX component and export prompts for Gemini, Cursor, ChatGPT, and Claude...",
           });
-
-          // Save to SQLite via Prisma
-          try {
-            const saved = await prisma.generatedSkill.create({
-              data: {
-                url: skillResponse.targetUrl,
-                title: skillResponse.title || skillResponse.name,
-                skillName: skillResponse.name,
-                description: skillResponse.description,
-                skillMd: skillResponse.skillMd,
-                componentCode: skillResponse.componentCode,
-                stylesJson: JSON.stringify(skillResponse.styles),
-                logicJson: JSON.stringify(skillResponse.logic),
-                promptsJson: JSON.stringify(skillResponse.modelPrompts),
-                markdownSnippet: skillResponse.rawMarkdownSnippet || "",
-              },
-            });
-            skillResponse.id = saved.id;
-            skillResponse.createdAt = saved.createdAt.toISOString();
-          } catch (dbErr) {
-            console.warn("Failed to persist skill to database:", dbErr);
-          }
 
           await sendUpdate({
             step: 4,
@@ -225,26 +206,9 @@ export async function POST(req: NextRequest) {
     if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
       skillResponse.frameworks = scrapeResult.logic.frameworks;
     }
-
-    try {
-      const saved = await prisma.generatedSkill.create({
-        data: {
-          url: skillResponse.targetUrl,
-          title: skillResponse.title || skillResponse.name,
-          skillName: skillResponse.name,
-          description: skillResponse.description,
-          skillMd: skillResponse.skillMd,
-          componentCode: skillResponse.componentCode,
-          stylesJson: JSON.stringify(skillResponse.styles),
-          logicJson: JSON.stringify(skillResponse.logic),
-          promptsJson: JSON.stringify(skillResponse.modelPrompts),
-          markdownSnippet: skillResponse.rawMarkdownSnippet || "",
-        },
-      });
-      skillResponse.id = saved.id;
-      skillResponse.createdAt = saved.createdAt.toISOString();
-    } catch (dbErr) {
-      console.warn("Database save error:", dbErr);
+    const detectedLanguages = scrapeResult.languages || scrapeResult.logic.languages;
+    if (detectedLanguages && detectedLanguages.length > 0 && (!skillResponse.languages || skillResponse.languages.length === 0)) {
+      skillResponse.languages = detectedLanguages;
     }
 
     return NextResponse.json(skillResponse);

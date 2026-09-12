@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { UrlInputForm } from "@/components/UrlInputForm";
 import { ConfigDrawer } from "@/components/ConfigDrawer";
-import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { ProgressTracker } from "@/components/ProgressTracker";
 import { ResultsWorkspace } from "@/components/ResultsWorkspace";
 import { SplashScreen } from "@/components/SplashScreen";
@@ -12,9 +11,7 @@ import {
   UniversalSkill,
   GenerationStepUpdate,
 } from "@/lib/types";
-import { AlertCircle, History, Sliders, ArrowLeft } from "lucide-react";
-
-const STORAGE_KEY = "skillforge_config";
+import { AlertCircle, Sliders, ArrowLeft } from "lucide-react";
 
 export default function Home() {
   const [config, setConfig] = useState<ApiKeysConfig>({
@@ -25,8 +22,6 @@ export default function Home() {
   });
 
   const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historySkills, setHistorySkills] = useState<UniversalSkill[]>([]);
   const [showSplash, setShowSplash] = useState(true);
 
   // Generation Pipeline State
@@ -40,17 +35,10 @@ export default function Home() {
   const [activeSkill, setActiveSkill] = useState<UniversalSkill | null>(null);
 
   useEffect(() => {
+    // Purge any legacy stored config from localStorage to clean up previously persisted keys
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setConfig((prev) => ({ ...prev, ...parsed }));
-      }
-    } catch (e) {
-      console.warn("Failed to read config from localStorage:", e);
-    }
-
-    fetchHistory();
+      localStorage.removeItem("skillforge_config");
+    } catch {}
   }, []);
 
   const handleDismissSplash = () => {
@@ -59,36 +47,6 @@ export default function Home() {
 
   const saveConfig = (updated: ApiKeysConfig) => {
     setConfig(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.warn("Failed to write config to localStorage:", e);
-    }
-  };
-
-  const fetchHistory = async () => {
-    try {
-      const res = await fetch("/api/history");
-      if (res.ok) {
-        const data = await res.json();
-        setHistorySkills(data.skills || []);
-      }
-    } catch (err) {
-      console.warn("Failed to fetch history:", err);
-    }
-  };
-
-  const handleDeleteHistory = async (id: string) => {
-    try {
-      const res = await fetch(`/api/history?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setHistorySkills((prev) => prev.filter((s) => s.id !== id));
-      }
-    } catch (err) {
-      console.error("Failed to delete history item:", err);
-    }
   };
 
   const handleGenerateSkill = async (
@@ -165,7 +123,6 @@ export default function Home() {
               if (update.status === "completed" && update.result) {
                 setActiveSkill(update.result);
                 setIsGenerating(false);
-                fetchHistory();
               }
             } catch (parseErr) {
               console.warn("SSE parsing error:", parseErr, dataStr);
@@ -183,25 +140,25 @@ export default function Home() {
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-      className="min-h-screen flex flex-col bg-white text-[#1f1f1f] relative overflow-x-hidden selection:bg-[#1a73e8]/20 selection:text-[#1a73e8]"
+      className="min-h-screen flex flex-col bg-[#000000] text-[#ffffff] relative overflow-x-hidden selection:bg-[#1a73e8]/30 selection:text-[#3186ff] grid-container"
     >
       {/* Splash Screen */}
       {showSplash && (
         <SplashScreen onDismiss={handleDismissSplash} />
       )}
 
-      {/* Consistent Unified Navbar */}
-      <header className="w-full h-12 sm:h-14 px-4 sm:px-8 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-30">
+      {/* Consistent Unified Navbar (Antigravity Sleek Dark) */}
+      <header className="w-full h-12 sm:h-14 px-4 sm:px-8 flex items-center justify-between bg-[#000000]/85 backdrop-blur-md border-b border-[#262930] sticky top-0 z-30">
         {/* Brand & Quick Actions */}
         <div className="flex items-center gap-2.5">
           <div
             onClick={() => setActiveSkill(null)}
             className="flex items-center gap-2 cursor-pointer select-none group"
           >
-            <span className="text-base sm:text-lg font-semibold tracking-[-0.035em] text-[#111111] group-hover:text-[#1a73e8] transition-colors">
+            <span className="text-base sm:text-lg font-semibold tracking-[-0.035em] text-[#ffffff] group-hover:text-[#3186ff] transition-colors">
               SkillForge
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#111111]/5 text-[#5f6368] border border-[#dadce0] font-medium">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#121316] text-[#9aa0a6] border border-[#262930] font-medium">
               v1.0
             </span>
           </div>
@@ -210,9 +167,9 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setActiveSkill(null)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-[#111111] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-all cursor-pointer shadow-2xs"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-[#ffffff] bg-[#121316] hover:bg-[#1c1e24] border border-[#262930] hover:border-[#3186ff]/40 transition-all cursor-pointer shadow-2xs"
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-[#5f6368]" />
+              <ArrowLeft className="w-3.5 h-3.5 text-[#9aa0a6]" />
               <span className="hidden sm:inline">New Extraction</span>
             </button>
           )}
@@ -224,30 +181,17 @@ export default function Home() {
             type="button"
             onClick={() => setShowSplash(true)}
             title="View Splash Screen"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#e8eaed] bg-[#121316] hover:bg-[#1c1e24] border border-[#262930] hover:border-[#3186ff]/40 transition-colors cursor-pointer"
           >
-            <span className="w-2 h-2 rounded-full bg-[#ffe432]" />
+            <span className="w-2 h-2 rounded-full bg-[#ffe432] shadow-[0_0_8px_#ffe432]" />
             <span>Splash</span>
           </button>
           <button
             type="button"
-            onClick={() => setIsHistoryOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
-          >
-            <History className="w-3.5 h-3.5 text-[#5f6368]" />
-            <span>Saved Skills</span>
-            {historySkills.length > 0 && (
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-[#1a73e8]/15 text-[#1a73e8] font-mono font-semibold">
-                {historySkills.length}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
             onClick={() => setIsConfigOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#202124] bg-[#f1f3f4] hover:bg-[#e8eaed] border border-[#dadce0] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#e8eaed] bg-[#121316] hover:bg-[#1c1e24] border border-[#262930] hover:border-[#3186ff]/40 transition-colors cursor-pointer"
           >
-            <Sliders className="w-3.5 h-3.5 text-[#5f6368]" />
+            <Sliders className="w-3.5 h-3.5 text-[#9aa0a6]" />
             <span>Settings</span>
           </button>
         </div>
@@ -265,11 +209,11 @@ export default function Home() {
 
         {/* Error Banner */}
         {generationError && (
-          <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3 shadow-xs">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-200 text-xs flex items-start gap-3 shadow-xs">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <span className="font-semibold text-rose-900">Extraction Error:</span>
-              <p className="leading-relaxed font-mono">{generationError}</p>
+              <span className="font-semibold text-rose-300">Extraction Error:</span>
+              <p className="leading-relaxed font-mono text-rose-200">{generationError}</p>
             </div>
           </div>
         )}
@@ -300,19 +244,8 @@ export default function Home() {
         onSaveConfig={saveConfig}
       />
 
-      <HistoryDrawer
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        skills={historySkills}
-        onSelectSkill={(skill) => {
-          setActiveSkill(skill);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-        onDeleteSkill={handleDeleteHistory}
-      />
-
-      {/* Consistent Unified Footer */}
-      <footer className="w-full px-6 sm:px-12 py-5 border-t border-[#dadce0]/70 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#5f6368]">
+      {/* Consistent Unified Footer (Antigravity Minimalist Dark) */}
+      <footer className="w-full px-6 sm:px-12 py-5 border-t border-[#262930] bg-[#000000] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#9aa0a6]">
         <div>SkillForge Engine • Google Sans Flex</div>
         <div>Universal SKILL.md (Gemini • ChatGPT • Cursor • Claude)</div>
       </footer>

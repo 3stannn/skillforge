@@ -51,7 +51,7 @@ export function ModelExportModal({
       description="Copy model-specific instructions or download the complete project bundle."
       maxWidth="xl"
     >
-      <div className="space-y-4 text-sm text-[#202124]">
+      <div className="space-y-4 text-sm text-[#bdc1c6]">
         {/* Model Tabs */}
         <div className="flex flex-wrap gap-2">
           {modelOptions.map((m) => {
@@ -67,8 +67,8 @@ export function ModelExportModal({
                 }}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium border transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-[#e8f0fe] text-[#1a73e8] border-[#1a73e8]/30 shadow-2xs font-semibold"
-                    : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#111111] hover:bg-[#f1f3f4]"
+                    ? "bg-[#1a73e8]/20 text-[#3186ff] border-[#1a73e8]/40 shadow-2xs font-semibold"
+                    : "bg-[#121316] border-[#262930] text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${m.color}`} />
@@ -79,25 +79,25 @@ export function ModelExportModal({
         </div>
 
         {/* Model Instructions Banner */}
-        <div className="p-3 bg-[#f8f9fa] rounded-xl border border-[#dadce0] text-xs text-[#5f6368] font-mono leading-relaxed">
+        <div className="p-3 bg-[#121316] rounded-xl border border-[#262930] text-xs text-[#9aa0a6] font-mono leading-relaxed">
           {activeModel === "gemini" && (
             <p>
-              <strong className="text-[#111111]">Google Gemini:</strong> Paste into Google AI Studio (System Instructions) or Gemini API system instructions.
+              <strong className="text-white">Google Gemini:</strong> Paste into Google AI Studio (System Instructions) or Gemini API system instructions.
             </p>
           )}
           {activeModel === "cursor" && (
             <p>
-              <strong className="text-[#111111]">Cursor & Windsurf:</strong> Save as <code className="text-[#1a73e8] font-bold">.cursorrules</code> in your project root.
+              <strong className="text-white">Cursor & Windsurf:</strong> Save as <code className="text-[#3186ff] font-bold">.cursorrules</code> in your project root.
             </p>
           )}
           {activeModel === "chatgpt" && (
             <p>
-              <strong className="text-[#111111]">ChatGPT / OpenAI:</strong> Paste into the Custom GPT &quot;Instructions&quot; field.
+              <strong className="text-white">ChatGPT / OpenAI:</strong> Paste into the Custom GPT &quot;Instructions&quot; field.
             </p>
           )}
           {activeModel === "claude" && (
             <p>
-              <strong className="text-[#111111]">Anthropic Claude:</strong> Add to Claude Project Knowledge or custom instructions.
+              <strong className="text-white">Anthropic Claude:</strong> Add to Claude Project Knowledge or custom instructions.
             </p>
           )}
         </div>
@@ -105,13 +105,13 @@ export function ModelExportModal({
         {/* Prompt Box */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368]">
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
               Prompt Template
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-medium text-[#1a73e8] bg-[#e8f0fe] border border-[#1a73e8]/20 hover:bg-[#d2e3fc] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-medium text-[#3186ff] bg-[#1a73e8]/20 border border-[#1a73e8]/30 hover:bg-[#1a73e8]/30 transition-colors cursor-pointer"
             >
               {copied ? (
                 <>
@@ -127,24 +127,24 @@ export function ModelExportModal({
             </button>
           </div>
 
-          <div className="p-3.5 bg-[#121316] rounded-xl border border-[#2b2c31] font-mono text-xs text-[#dcdfe4] overflow-x-auto max-h-56 leading-relaxed whitespace-pre-wrap select-text shadow-inner">
+          <div className="p-3.5 bg-[#0e0f13] rounded-xl border border-[#262930] font-mono text-xs text-[#e8eaed] overflow-x-auto max-h-56 leading-relaxed whitespace-pre-wrap select-text shadow-inner">
             {currentPrompt}
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#dadce0]">
+        <div className="flex items-center justify-between pt-3 border-t border-[#262930]">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full text-xs font-medium text-[#5f6368] hover:text-[#111111] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-full text-xs font-medium text-[#9aa0a6] hover:text-white hover:bg-[#16181d] transition-colors cursor-pointer"
           >
             Close
           </button>
           <button
             type="button"
             onClick={onDownloadZip}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-medium shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-[#e8eaed] text-black text-xs font-medium shadow-xs transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download All (.zip)</span>

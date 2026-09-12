@@ -33,6 +33,7 @@ export interface ExtractedLogic {
   formActions: string[];
   forms?: ExtractedForm[];
   frameworks?: string[];
+  languages?: string[];
   navigationRoutes?: string[];
   rawLogicSummary?: string;
 }
@@ -80,6 +81,7 @@ export interface UniversalSkill {
   createdAt?: string;
   crawledPages?: CrawledPageSummary[];
   frameworks?: string[];
+  languages?: string[];
 }
 
 export interface GenerationStepUpdate {

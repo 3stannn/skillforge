@@ -52,19 +52,19 @@ export function ConfigDrawer({
       description="Configure optional API keys or use the built-in zero-cost engine."
       width="md"
     >
-      <div className="space-y-6 text-sm text-[#202124]">
+      <div className="space-y-6 text-sm text-[#bdc1c6]">
         {/* Zero Cost Notice */}
-        <div className="p-4 rounded-xl bg-[#f1f3f4] border border-[#dadce0] text-xs leading-relaxed text-[#5f6368] flex items-start gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#1a73e8] mt-1 shrink-0 animate-pulse" />
+        <div className="p-4 rounded-xl bg-[#121316] border border-[#262930] text-xs leading-relaxed text-[#9aa0a6] flex items-start gap-3">
+          <div className="w-2 h-2 rounded-full bg-[#3186ff] mt-1 shrink-0 animate-pulse" />
           <div>
-            <span className="font-semibold text-[#111111]">Zero-Cost Mode Active:</span>{" "}
+            <span className="font-semibold text-white">Zero-Cost Mode Active:</span>{" "}
             No API keys required. SkillForge extracts DOM styles and interactive logic out of the box. Add your free Gemini or Groq key for multi-step reasoning.
           </div>
         </div>
 
         {/* LLM Provider Selection */}
         <div className="space-y-2">
-          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368]">
+          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
             LLM Provider Preference
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -84,8 +84,8 @@ export function ConfigDrawer({
                 }
                 className={`px-3 py-2 rounded-lg border text-xs font-mono font-medium text-center transition-colors cursor-pointer ${
                   localConfig.preferredLlm === p.id
-                    ? "bg-[#111111] border-[#111111] text-white"
-                    : "bg-[#f1f3f4] border-[#dadce0] text-[#202124] hover:bg-[#e8eaed]"
+                    ? "bg-white border-white text-black font-semibold shadow-xs"
+                    : "bg-[#121316] border-[#262930] text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
                 }`}
               >
                 {p.label}
@@ -95,15 +95,15 @@ export function ConfigDrawer({
         </div>
 
         {/* Deep Crawl & Exploration Settings */}
-        <div className="border-t border-[#dadce0] pt-4 space-y-3">
-          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368]">
+        <div className="border-t border-[#262930] pt-4 space-y-3">
+          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
             Scraper Depth & Exploration
           </label>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#202124] font-medium">Default Crawl Mode</span>
-              <span className="text-[#5f6368] font-mono text-[11px]">
+              <span className="text-white font-medium">Default Crawl Mode</span>
+              <span className="text-[#9aa0a6] font-mono text-[11px]">
                 {localConfig.defaultCrawlDepth === 0 ? "Single Page" : "Deep Multi-Page (Depth 1)"}
               </span>
             </div>
@@ -118,8 +118,8 @@ export function ConfigDrawer({
                 }
                 className={`px-3 py-2 rounded-lg border text-xs font-medium text-center transition-colors cursor-pointer ${
                   (localConfig.defaultCrawlDepth ?? 1) > 0
-                    ? "bg-[#111111] border-[#111111] text-white font-semibold"
-                    : "bg-[#f1f3f4] border-[#dadce0] text-[#202124] hover:bg-[#e8eaed]"
+                    ? "bg-white border-white text-black font-semibold shadow-xs"
+                    : "bg-[#121316] border-[#262930] text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
                 }`}
               >
                 Deep Multi-Page
@@ -134,8 +134,8 @@ export function ConfigDrawer({
                 }
                 className={`px-3 py-2 rounded-lg border text-xs font-medium text-center transition-colors cursor-pointer ${
                   localConfig.defaultCrawlDepth === 0
-                    ? "bg-[#111111] border-[#111111] text-white font-semibold"
-                    : "bg-[#f1f3f4] border-[#dadce0] text-[#202124] hover:bg-[#e8eaed]"
+                    ? "bg-white border-white text-black font-semibold shadow-xs"
+                    : "bg-[#121316] border-[#262930] text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
                 }`}
               >
                 Single Page
@@ -145,8 +145,8 @@ export function ConfigDrawer({
 
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#202124] font-medium">Max Sub-Pages Cap</span>
-              <span className="font-mono text-[#1a73e8] font-bold text-xs">
+              <span className="text-white font-medium">Max Sub-Pages Cap</span>
+              <span className="font-mono text-[#3186ff] font-bold text-xs">
                 {localConfig.maxCrawlPages ?? 5} pages
               </span>
             </div>
@@ -163,8 +163,8 @@ export function ConfigDrawer({
                   }
                   className={`py-1.5 rounded-lg border text-xs font-mono font-medium text-center transition-colors cursor-pointer ${
                     (localConfig.maxCrawlPages ?? 5) === num
-                      ? "bg-[#1a73e8] border-[#1a73e8] text-white"
-                      : "bg-[#f1f3f4] border-[#dadce0] text-[#5f6368] hover:bg-[#e8eaed]"
+                      ? "bg-[#1a73e8] border-[#3186ff] text-white shadow-xs"
+                      : "bg-[#121316] border-[#262930] text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
                   }`}
                 >
                   {num} pages
@@ -174,23 +174,23 @@ export function ConfigDrawer({
           </div>
         </div>
 
-        <div className="border-t border-[#dadce0] pt-4 space-y-4">
-          <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
-            <Key className="w-3.5 h-3.5 text-[#5f6368]" />
-            Custom API Keys (Stored in Browser)
+        <div className="border-t border-[#262930] pt-4 space-y-4">
+          <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6] flex items-center gap-1.5">
+            <Key className="w-3.5 h-3.5 text-[#9aa0a6]" />
+            Custom API Keys (Session Only)
           </h3>
 
           {/* Gemini API Key */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-[#111111] flex items-center gap-1.5 font-mono">
-                <Sparkles className="w-3.5 h-3.5 text-[#1a73e8]" /> Google Gemini Key
+              <span className="font-medium text-white flex items-center gap-1.5 font-mono">
+                <Sparkles className="w-3.5 h-3.5 text-[#3186ff]" /> Google Gemini Key
               </span>
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#1a73e8] hover:underline flex items-center gap-1 text-[11px] font-mono"
+                className="text-[#3186ff] hover:text-[#5fa5ff] hover:underline flex items-center gap-1 text-[11px] font-mono"
               >
                 Get Free Key <ExternalLink className="w-2.5 h-2.5" />
               </a>
@@ -206,12 +206,12 @@ export function ConfigDrawer({
                     geminiApiKey: e.target.value,
                   }))
                 }
-                className="w-full bg-white border border-[#dadce0] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] pr-9"
+                className="w-full bg-[#121316] border border-[#262930] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-[#5f6368] focus:outline-none focus:border-[#3186ff] focus:ring-1 focus:ring-[#3186ff] pr-9"
               />
               <button
                 type="button"
                 onClick={() => setShowGemini(!showGemini)}
-                className="absolute right-2.5 top-2.5 text-[#80868b] hover:text-[#111111]"
+                className="absolute right-2.5 top-2.5 text-[#5f6368] hover:text-white"
               >
                 {showGemini ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -221,14 +221,14 @@ export function ConfigDrawer({
           {/* Groq API Key */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-[#111111] flex items-center gap-1.5 font-mono">
-                <Cpu className="w-3.5 h-3.5 text-[#5f6368]" /> Groq API Key (Llama 3.3)
+              <span className="font-medium text-white flex items-center gap-1.5 font-mono">
+                <Cpu className="w-3.5 h-3.5 text-[#9aa0a6]" /> Groq API Key (Llama 3.3)
               </span>
               <a
                 href="https://console.groq.com/keys"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#1a73e8] hover:underline flex items-center gap-1 text-[11px] font-mono"
+                className="text-[#3186ff] hover:text-[#5fa5ff] hover:underline flex items-center gap-1 text-[11px] font-mono"
               >
                 Get Key <ExternalLink className="w-2.5 h-2.5" />
               </a>
@@ -244,12 +244,12 @@ export function ConfigDrawer({
                     groqApiKey: e.target.value,
                   }))
                 }
-                className="w-full bg-white border border-[#dadce0] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] pr-9"
+                className="w-full bg-[#121316] border border-[#262930] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-[#5f6368] focus:outline-none focus:border-[#3186ff] focus:ring-1 focus:ring-[#3186ff] pr-9"
               />
               <button
                 type="button"
                 onClick={() => setShowGroq(!showGroq)}
-                className="absolute right-2.5 top-2.5 text-[#80868b] hover:text-[#111111]"
+                className="absolute right-2.5 top-2.5 text-[#5f6368] hover:text-white"
               >
                 {showGroq ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -259,14 +259,14 @@ export function ConfigDrawer({
           {/* Firecrawl Key */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-[#111111] font-mono">
+              <span className="font-medium text-white font-mono">
                 Firecrawl API Key (Optional)
               </span>
               <a
                 href="https://firecrawl.dev"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#1a73e8] hover:underline flex items-center gap-1 text-[11px] font-mono"
+                className="text-[#3186ff] hover:text-[#5fa5ff] hover:underline flex items-center gap-1 text-[11px] font-mono"
               >
                 Get Key <ExternalLink className="w-2.5 h-2.5" />
               </a>
@@ -282,12 +282,12 @@ export function ConfigDrawer({
                     firecrawlApiKey: e.target.value,
                   }))
                 }
-                className="w-full bg-white border border-[#dadce0] rounded-lg px-3 py-2 text-xs font-mono text-[#111111] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] pr-9"
+                className="w-full bg-[#121316] border border-[#262930] rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-[#5f6368] focus:outline-none focus:border-[#3186ff] focus:ring-1 focus:ring-[#3186ff] pr-9"
               />
               <button
                 type="button"
                 onClick={() => setShowFirecrawl(!showFirecrawl)}
-                className="absolute right-2.5 top-2.5 text-[#80868b] hover:text-[#111111]"
+                className="absolute right-2.5 top-2.5 text-[#5f6368] hover:text-white"
               >
                 {showFirecrawl ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -296,19 +296,19 @@ export function ConfigDrawer({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 flex items-center justify-between border-t border-[#dadce0]">
+        <div className="pt-4 flex items-center justify-between border-t border-[#262930]">
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-xs text-[#5f6368] hover:text-[#111111] font-mono underline"
+            className="text-xs text-[#9aa0a6] hover:text-white font-mono underline cursor-pointer"
           >
-            Clear Stored Keys
+            Clear Keys
           </button>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleSave}
-              className="px-5 py-2 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95"
+              className="px-5 py-2 rounded-full bg-white hover:bg-[#e8eaed] text-black text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               {savedSuccess ? (
                 <>

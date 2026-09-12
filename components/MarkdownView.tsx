@@ -178,7 +178,7 @@ function renderInline(text: string): React.ReactNode {
       return (
         <code
           key={index}
-          className="px-1.5 py-0.5 rounded bg-[#f1f3f4] text-[#d93025] font-mono text-[11px] font-medium border border-[#dadce0]"
+          className="px-1.5 py-0.5 rounded bg-[#16181d] text-[#ffe432] font-mono text-[11px] font-medium border border-[#262930]"
         >
           {token.slice(1, -1)}
         </code>
@@ -188,7 +188,7 @@ function renderInline(text: string): React.ReactNode {
     // Bold
     if (token.startsWith("**") && token.endsWith("**") && token.length >= 4) {
       return (
-        <strong key={index} className="font-semibold text-[#111111]">
+        <strong key={index} className="font-semibold text-white">
           {token.slice(2, -2)}
         </strong>
       );
@@ -203,7 +203,7 @@ function renderInline(text: string): React.ReactNode {
           <img
             src={imgMatch[2]}
             alt={imgMatch[1] || "Extracted asset"}
-            className="max-h-48 max-w-full rounded-xl border border-[#dadce0] object-contain bg-[#f8f9fa] shadow-2xs"
+            className="max-h-48 max-w-full rounded-xl border border-[#262930] object-contain bg-[#121316] shadow-2xs"
             onError={(e) => {
               // Gracefully hide broken external images
               (e.target as HTMLElement).style.display = "none";
@@ -222,7 +222,7 @@ function renderInline(text: string): React.ReactNode {
           href={linkMatch[2]}
           target="_blank"
           rel="noreferrer"
-          className="text-[#1a73e8] hover:underline font-medium inline-flex items-center gap-0.5"
+          className="text-[#3186ff] hover:text-[#5fa5ff] hover:underline font-medium inline-flex items-center gap-0.5"
         >
           {linkMatch[1]}
         </a>
@@ -278,27 +278,27 @@ export function MarkdownView({ content }: MarkdownViewProps) {
   const blocks = parseBlocks(content);
 
   return (
-    <div className="space-y-4 text-[#202124] text-xs sm:text-[13px] leading-relaxed select-text font-sans">
+    <div className="space-y-4 text-[#e8eaed] text-xs sm:text-[13px] leading-relaxed select-text font-sans">
       {blocks.map((block, idx) => {
         switch (block.type) {
           case "frontmatter":
             return (
               <div
                 key={idx}
-                className="p-3.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl space-y-1 font-mono text-xs"
+                className="p-3.5 bg-[#121316] border border-[#262930] rounded-xl space-y-1 font-mono text-xs"
               >
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md bg-[#e8f0fe] text-[#1a73e8] font-semibold text-[10px] uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded-md bg-[#1a73e8]/20 border border-[#1a73e8]/30 text-[#3186ff] font-semibold text-[10px] uppercase tracking-wider">
                     Agent Skill Spec
                   </span>
                   {block.name && (
-                    <span className="text-[#111111] font-bold">
+                    <span className="text-white font-bold">
                       name: {block.name}
                     </span>
                   )}
                 </div>
                 {block.description && (
-                  <p className="text-[#5f6368] text-xs font-sans mt-1">
+                  <p className="text-[#9aa0a6] text-xs font-sans mt-1">
                     {block.description}
                   </p>
                 )}
@@ -307,8 +307,8 @@ export function MarkdownView({ content }: MarkdownViewProps) {
 
           case "h1":
             return (
-              <div key={idx} className="pt-2 pb-1 border-b border-[#dadce0]/70">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111]">
+              <div key={idx} className="pt-2 pb-1 border-b border-[#262930]">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
                   {block.text}
                 </h1>
               </div>
@@ -317,8 +317,8 @@ export function MarkdownView({ content }: MarkdownViewProps) {
           case "h2":
             return (
               <div key={idx} className="pt-4 pb-1">
-                <h2 className="text-base sm:text-lg font-semibold tracking-tight text-[#111111] flex items-center gap-2">
-                  <ChevronRight className="w-4 h-4 text-[#1a73e8] shrink-0" />
+                <h2 className="text-base sm:text-lg font-semibold tracking-tight text-white flex items-center gap-2">
+                  <ChevronRight className="w-4 h-4 text-[#3186ff] shrink-0" />
                   <span>{block.text}</span>
                 </h2>
               </div>
@@ -327,7 +327,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
           case "h3":
             return (
               <div key={idx} className="pt-2">
-                <h3 className="text-sm font-semibold text-[#202124]">
+                <h3 className="text-sm font-semibold text-white">
                   {block.text}
                 </h3>
               </div>
@@ -337,7 +337,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             return (
               <div
                 key={idx}
-                className="border-l-4 border-[#1a73e8] bg-[#f8fafd] p-3.5 rounded-r-xl text-xs sm:text-sm text-[#3c4043] my-2 leading-relaxed space-y-1 shadow-2xs"
+                className="border-l-4 border-[#3186ff] bg-[#121316] p-3.5 rounded-r-xl text-xs sm:text-sm text-[#bdc1c6] my-2 leading-relaxed space-y-1 shadow-2xs"
               >
                 {block.lines.map((l, lIdx) => (
                   <div key={lIdx}>{renderInline(l)}</div>
@@ -349,31 +349,31 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             return (
               <div
                 key={idx}
-                className="my-3 overflow-x-auto border border-[#dadce0] rounded-xl shadow-2xs"
+                className="my-3 overflow-x-auto border border-[#262930] rounded-xl shadow-2xs"
               >
                 <table className="w-full text-xs text-left border-collapse">
                   <thead>
-                    <tr className="bg-[#f8f9fa] border-b border-[#dadce0]">
+                    <tr className="bg-[#16181d] border-b border-[#262930]">
                       {block.headers.map((h, hIdx) => (
                         <th
                           key={hIdx}
-                          className="px-3 py-2.5 font-semibold text-[#202124]"
+                          className="px-3 py-2.5 font-semibold text-white"
                         >
                           {h}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#dadce0]/70 bg-white">
+                  <tbody className="divide-y divide-[#262930] bg-[#0e0f13]">
                     {block.rows.map((r, rIdx) => (
                       <tr
                         key={rIdx}
-                        className="hover:bg-[#f8f9fa]/50 transition-colors"
+                        className="hover:bg-[#16181d] transition-colors"
                       >
                         {r.map((c, cIdx) => (
                           <td
                             key={cIdx}
-                            className="px-3 py-2 text-[#3c4043] font-mono text-[11px]"
+                            className="px-3 py-2 text-[#bdc1c6] font-mono text-[11px]"
                           >
                             {renderInline(c)}
                           </td>
@@ -396,7 +396,7 @@ export function MarkdownView({ content }: MarkdownViewProps) {
               >
                 {block.items.map((item, itemIdx) => (
                   <li key={itemIdx} className="flex items-start gap-2">
-                    <span className="text-[#1a73e8] mt-0.5 text-xs font-bold shrink-0">
+                    <span className="text-[#3186ff] mt-0.5 text-xs font-bold shrink-0">
                       •
                     </span>
                     <div className="flex-1">{renderInline(item)}</div>
@@ -406,11 +406,11 @@ export function MarkdownView({ content }: MarkdownViewProps) {
             );
 
           case "hr":
-            return <hr key={idx} className="my-3 border-[#dadce0]" />;
+            return <hr key={idx} className="my-3 border-[#262930]" />;
 
           case "p":
             return (
-              <p key={idx} className="text-[#3c4043] leading-relaxed my-1.5">
+              <p key={idx} className="text-[#bdc1c6] leading-relaxed my-1.5">
                 {renderInline(block.text)}
               </p>
             );

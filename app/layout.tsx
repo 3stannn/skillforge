@@ -22,7 +22,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-white text-[#1f1f1f] antialiased flex flex-col selection:bg-[#1a73e8]/20 selection:text-[#1a73e8]">
+      <body className="min-h-screen bg-[#000000] text-[#ffffff] antialiased flex flex-col selection:bg-[#1a73e8]/30 selection:text-[#3186ff]">
         <main className="flex-1">{children}</main>
       </body>
     </html>

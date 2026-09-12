@@ -3,70 +3,90 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 12%;
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 4%;
+  --popover-foreground: 0 0% 100%;
   --primary: 217 90% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 0 0% 12%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 215 16% 47%;
+  --secondary: 220 14% 10%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 220 14% 10%;
+  --muted-foreground: 215 16% 65%;
   --accent: 52 100% 60%;
   --accent-foreground: 0 0% 0%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 13% 88%;
-  --input: 220 13% 88%;
+  --border: 220 13% 16%;
+  --input: 220 13% 16%;
   --ring: 217 90% 61%;
   --radius: 0.75rem;
 
-  /* Google Antigravity Color Tokens */
-  --antigravity-bg: #ffffff;
-  --antigravity-surface: #ffffff;
-  --antigravity-surface-elevated: #f8f9fa;
-  --antigravity-border: #dadce0;
-  --antigravity-border-hover: #bdc1c6;
+  /* Google Antigravity Design System Tokens (from antigravity_skill) */
+  --antigravity-bg: #000000;
+  --antigravity-surface: #0a0b0e;
+  --antigravity-surface-elevated: #121316;
+  --antigravity-border: #262930;
+  --antigravity-border-hover: #3c4043;
+  --antigravity-gray: #45474d;
+  --antigravity-light: #eff0f3;
   --antigravity-blue: #1a73e8;
   --antigravity-blue-hover: #1557b0;
   --antigravity-blue-light: #3186ff;
   --antigravity-yellow: #ffe432;
-  --antigravity-text-primary: #111111;
-  --antigravity-text-secondary: #5f6368;
-  --antigravity-text-muted: #80868b;
+  --antigravity-text-primary: #ffffff;
+  --antigravity-text-secondary: #9aa0a6;
+  --antigravity-text-muted: #5f6368;
 }
 
 body {
-  background-color: #ffffff;
-  color: #1f1f1f;
-  font-family: 'Google Sans Flex', 'Google Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: 'Google Sans Flex', 'Google Sans Text', 'Google Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Antigravity Minimalist Scrollbars */
+/* Subtle Antigravity Grid Background Pattern */
+.grid-container {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Antigravity Cursor Blink Animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Antigravity Dark Minimalist Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #dadce0;
+  background: #262930;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #bdc1c6;
+  background: #45474d;
 }
 
 /* Subtle border utility */
 .antigravity-border {
-  border-color: #dadce0;
+  border-color: #262930;
 }

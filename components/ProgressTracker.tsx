@@ -45,19 +45,19 @@ export function ProgressTracker({
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-      className="w-full max-w-3xl mx-auto my-6 p-6 bg-white border border-[#dadce0] rounded-2xl space-y-5 shadow-sm animate-in fade-in duration-200"
+      className="w-full max-w-3xl mx-auto my-6 p-6 bg-[#0a0b0e] border border-[#262930] rounded-2xl space-y-5 shadow-xl animate-in fade-in duration-200"
     >
-      <div className="flex items-center justify-between border-b border-[#dadce0] pb-4">
+      <div className="flex items-center justify-between border-b border-[#262930] pb-4">
         <div className="space-y-0.5">
-          <div className="text-[11px] font-mono text-[#1a73e8] font-semibold tracking-wider uppercase">
+          <div className="text-[11px] font-mono text-[#3186ff] font-semibold tracking-wider uppercase">
             Extraction Pipeline
           </div>
-          <div className="text-xs text-[#5f6368] truncate max-w-md font-mono">
+          <div className="text-xs text-[#9aa0a6] truncate max-w-md font-mono">
             {activeUrl}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-mono px-3 py-1 rounded-full bg-[#f1f3f4] text-[#1a73e8] border border-[#dadce0] font-medium">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1a73e8]" />
+        <div className="flex items-center gap-1.5 text-xs font-mono px-3 py-1 rounded-full bg-[#121316] text-[#3186ff] border border-[#262930] font-medium">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#3186ff]" />
           <span>Step {Math.min(currentStep, 4)} of 4</span>
         </div>
       </div>
@@ -75,29 +75,29 @@ export function ProgressTracker({
               key={def.step}
               className={`p-3.5 rounded-xl border transition-all duration-150 flex items-start gap-3.5 ${
                 isError
-                  ? "bg-rose-50 border-rose-200"
+                  ? "bg-rose-950/40 border-rose-800/60"
                   : isActive
-                  ? "bg-[#e8f0fe]/60 border-[#1a73e8]/40 ring-1 ring-[#1a73e8]/20"
+                  ? "bg-[#1a73e8]/10 border-[#3186ff]/40 ring-1 ring-[#1a73e8]/20"
                   : isCompleted
-                  ? "bg-[#e6f4ea]/40 border-[#34A853]/30"
-                  : "bg-transparent border-[#dadce0]/50 opacity-40"
+                  ? "bg-[#34A853]/10 border-[#34A853]/30"
+                  : "bg-transparent border-[#262930]/40 opacity-40"
               }`}
             >
               <div className="mt-0.5 shrink-0">
                 {isError ? (
-                  <div className="w-6 h-6 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center border border-rose-300">
+                  <div className="w-6 h-6 rounded-full bg-rose-950 text-rose-400 flex items-center justify-center border border-rose-800">
                     <AlertCircle className="w-3.5 h-3.5" />
                   </div>
                 ) : isCompleted ? (
-                  <div className="w-6 h-6 rounded-full bg-[#e6f4ea] text-[#137333] flex items-center justify-center border border-[#34A853]/50">
+                  <div className="w-6 h-6 rounded-full bg-[#34A853]/20 text-[#34A853] flex items-center justify-center border border-[#34A853]/40">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   </div>
                 ) : isActive ? (
-                  <div className="w-6 h-6 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center border border-[#1a73e8]/40">
+                  <div className="w-6 h-6 rounded-full bg-[#1a73e8]/20 text-[#3186ff] flex items-center justify-center border border-[#3186ff]/40">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   </div>
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-[#f1f3f4] text-[#80868b] flex items-center justify-center border border-[#dadce0]">
+                  <div className="w-6 h-6 rounded-full bg-[#16181d] text-[#5f6368] flex items-center justify-center border border-[#262930]">
                     <StepIcon className="w-3 h-3" />
                   </div>
                 )}
@@ -108,27 +108,27 @@ export function ProgressTracker({
                   <span
                     className={`text-xs sm:text-sm font-medium ${
                       isError
-                        ? "text-rose-900"
+                        ? "text-rose-300"
                         : isActive
-                        ? "text-[#1a73e8]"
+                        ? "text-[#3186ff]"
                         : isCompleted
-                        ? "text-[#202124]"
-                        : "text-[#80868b]"
+                        ? "text-white"
+                        : "text-[#5f6368]"
                     }`}
                   >
                     {def.title}
                   </span>
-                  <span className="text-[10px] font-mono text-[#80868b] shrink-0 ml-2">
+                  <span className="text-[10px] font-mono text-[#5f6368] shrink-0 ml-2">
                     Step {def.step}/4
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#5f6368] mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-[#9aa0a6] mt-0.5 leading-relaxed">
                   {stepData?.message || def.description}
                 </p>
 
                 {stepData?.error && (
-                  <p className="text-xs text-rose-700 font-mono mt-1 bg-rose-100/60 p-1.5 rounded-lg border border-rose-200">
+                  <p className="text-xs text-rose-300 font-mono mt-1 bg-rose-950/60 p-1.5 rounded-lg border border-rose-800/60">
                     {stepData.error}
                   </p>
                 )}
