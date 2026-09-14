@@ -465,58 +465,6 @@ export function ProductWorkspaceShell({
             <span>AI Prompts</span>
           </div>
         </div>
-
-        {/* FAVORITES Section */}
-        <div className="space-y-1 pt-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#5e6473] px-2 flex items-center justify-between">
-            <span>Favorites</span>
-            <ChevronDown className="w-2.5 h-2.5" />
-          </span>
-
-          {favorites.length === 0 ? (
-            <div className="px-2 py-2 text-[11px] text-[#5e6473] font-mono italic">
-              No favorites yet
-            </div>
-          ) : (
-            favorites.map((fav) => (
-              <div
-                key={fav}
-                onClick={() => {
-                  handleSelectSystem(fav);
-                  if (isMobile) setIsMobileSidebarOpen(false);
-                }}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-white/5 text-white"
-              >
-                <Star className="w-3 h-3 text-[#3b82f6]" />
-                <span className="truncate">{fav}</span>
-              </div>
-            ))
-          )}
-
-          {/* Optional Sample Systems list */}
-          <div className="pt-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-[#585a5c] px-2 block mb-1">
-              Sample References
-            </span>
-            {SAMPLE_SYSTEMS_LIST.map((sample) => (
-              <div
-                key={sample.id}
-                onClick={() => {
-                  handleSelectSystem(sample.id);
-                  if (isMobile) setIsMobileSidebarOpen(false);
-                }}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
-                  activeSystemId === sample.id
-                    ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                    : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
-                }`}
-              >
-                <span className="text-[10px] text-[#585a5c] font-mono">↗</span>
-                <span className="truncate">{sample.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Sidebar Footer */}
@@ -555,6 +503,14 @@ export function ProductWorkspaceShell({
       </div>
     </>
   );
+
+  const designHeading = currentDesign
+    ? currentDesign.title
+      ? currentDesign.title.toLowerCase().includes("design system")
+        ? currentDesign.title
+        : `${currentDesign.title} Design System`
+      : `${currentDesign.name.replace(/_design$/, "").charAt(0).toUpperCase() + currentDesign.name.replace(/_design$/, "").slice(1)} Design System`
+    : "Website Design System";
 
   return (
     <div
@@ -603,7 +559,7 @@ export function ProductWorkspaceShell({
             </span>
             <span className="text-white font-medium truncate max-w-[200px] sm:max-w-md">
               {currentDesign
-                ? `Extract ${currentDesign.name.replace(/_design$/, "")}.app design system`
+                ? `Extract ${designHeading}`
                 : "New Extraction"}
             </span>
             {currentDesign && (
@@ -657,7 +613,7 @@ export function ProductWorkspaceShell({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white tracking-[-0.025em]">
                 {currentDesign
-                  ? `Extract ${currentDesign.name.replace(/_design$/, "")}.app design system`
+                  ? `Extract ${designHeading}`
                   : "Extract Website Design System"}
               </h1>
 

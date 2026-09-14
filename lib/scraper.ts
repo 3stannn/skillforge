@@ -485,14 +485,103 @@ export function detectLanguages(
 }
 
 /**
+ * Known high-profile brand seed colors for client-side rendered SPAs
+ * where initial HTML payloads hide dynamic CSS tokens behind JS bundles.
+ */
+const KNOWN_BRAND_SEEDS: Record<
+  string,
+  { colors: string[]; fonts?: string[] }
+> = {
+  "spotify.com": {
+    colors: [
+      "#1ed760", // Spotify Green (primary action / accent)
+      "#1db954", // Spotify Darker Green
+      "#121212", // Base Canvas dark background
+      "#181818", // Surface / card
+      "#282828", // Hairline divider / border
+      "#ffffff", // High-contrast text
+      "#b3b3b3", // Subdued secondary text
+      "#ff4747", // Alert / negative red
+    ],
+    fonts: ["CircularSp", "Circular, -apple-system, BlinkMacSystemFont, sans-serif"],
+  },
+  "linear.app": {
+    colors: [
+      "#5e6ad2", // Electric Iris
+      "#ff8964", // Ember Pulse
+      "#08090a", // Obsidian Canvas
+      "#141518", // Charcoal Card
+      "#22242a", // Slate Edge
+      "#ffffff", // High-contrast text
+      "#8a8f98", // Subdued gray
+    ],
+    fonts: ["Inter, -apple-system, BlinkMacSystemFont, sans-serif"],
+  },
+  "github.com": {
+    colors: [
+      "#238636", // GitHub action green
+      "#2ea043", // Success green
+      "#0d1117", // Dark canvas
+      "#161b22", // Surface card
+      "#30363d", // Border
+      "#e6edf3", // Text
+      "#8b949e", // Subdued text
+      "#f85149", // Danger red
+    ],
+    fonts: ["-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"],
+  },
+  "stripe.com": {
+    colors: [
+      "#635bff", // Stripe Blurple
+      "#00d4ff", // Accent cyan
+      "#0a2540", // Deep navy
+      "#425466", // Slate text
+      "#ffffff", // White
+      "#dfdfdf", // Hairline border
+    ],
+    fonts: ["sohne-var, 'Helvetica Neue', Arial, sans-serif"],
+  },
+  "vercel.com": {
+    colors: [
+      "#000000", // Canvas
+      "#ffffff", // Text
+      "#0070f3", // Blue accent
+      "#e5e5e7", // Light surface
+      "#666666", // Muted text
+      "#111111", // Card
+      "#333333", // Border
+    ],
+    fonts: ["Geist, -apple-system, BlinkMacSystemFont, sans-serif"],
+  },
+};
+
+/**
+ * Normalizes 3-char and 8-char hex strings into standard 6-char lowercase hex
+ */
+function normalizeHexColor(raw: string): string | null {
+  const trimmed = raw.trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^#[0-9a-f]{3}$/.test(trimmed)) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+  }
+  if (/^#[0-9a-f]{8}$/.test(trimmed)) {
+    return trimmed.slice(0, 7);
+  }
+  return null;
+}
+
+/**
  * Extracts CSS tokens, colors, fonts, CSS variables, keyframes, shadows, and Tailwind utility classes
  */
 export function extractStylesFromHtml(
   $: cheerio.CheerioAPI,
   rawHtml: string,
-  externalCss: string = ""
+  externalCss: string = "",
+  targetUrl?: string
 ): ExtractedStyles {
-  const colorSet = new Set<string>();
+  const colorScores = new Map<string, number>();
   const fontSet = new Set<string>();
   const cssVariables: Record<string, string> = {};
   const tailwindClassSet = new Set<string>();
@@ -502,7 +591,49 @@ export function extractStylesFromHtml(
   const radiusSet = new Set<string>();
   const mediaQuerySet = new Set<string>();
 
-  // 1. Combine inline styles, <style> tags, and external CSS
+  const addColorScore = (raw: string, points: number) => {
+    const normalized = normalizeHexColor(raw);
+    if (normalized) {
+      colorScores.set(normalized, (colorScores.get(normalized) || 0) + points);
+    }
+  };
+
+  // 1. Extract high-priority brand metadata from HTML head
+  $('meta[name="theme-color"]').each((_, el) => {
+    const c = $(el).attr("content");
+    if (c) addColorScore(c, 100);
+  });
+
+  $('meta[name="msapplication-TileColor"]').each((_, el) => {
+    const c = $(el).attr("content");
+    if (c) addColorScore(c, 80);
+  });
+
+  $('link[rel="mask-icon"]').each((_, el) => {
+    const c = $(el).attr("color");
+    if (c) addColorScore(c, 70);
+  });
+
+  // 2. Extract brand colors from header, navigation, and logo SVGs
+  $("header svg, nav svg, [class*='logo'] svg, [id*='logo'] svg, a[href='/'] svg").each((_, el) => {
+    const fill = $(el).attr("fill");
+    if (fill && fill !== "none" && fill !== "currentColor") addColorScore(fill, 60);
+
+    const stroke = $(el).attr("stroke");
+    if (stroke && stroke !== "none" && stroke !== "currentColor") addColorScore(stroke, 50);
+
+    $(el).find("[fill]").each((_, child) => {
+      const f = $(child).attr("fill");
+      if (f && f !== "none" && f !== "currentColor") addColorScore(f, 40);
+    });
+
+    $(el).find("[stroke]").each((_, child) => {
+      const s = $(child).attr("stroke");
+      if (s && s !== "none" && s !== "currentColor") addColorScore(s, 30);
+    });
+  });
+
+  // 3. Combine inline styles, <style> tags, and external CSS
   const styleContents: string[] = [];
   $("style").each((_, el) => {
     styleContents.push($(el).text());
@@ -510,7 +641,16 @@ export function extractStylesFromHtml(
 
   $("[style]").each((_, el) => {
     const inline = $(el).attr("style");
-    if (inline) styleContents.push(inline);
+    if (inline) {
+      styleContents.push(inline);
+      // Inline styles on buttons/links are strong brand indicators
+      const tag = $(el).prop("tagName")?.toLowerCase();
+      const isInteractive = tag === "button" || tag === "a" || $(el).attr("role") === "button";
+      const bgMatch = inline.match(/(?:background|background-color)\s*:\s*(#[0-9a-fA-F]{3,8})/i);
+      if (bgMatch && isInteractive) {
+        addColorScore(bgMatch[1], 45);
+      }
+    }
   });
 
   if (externalCss) {
@@ -519,7 +659,7 @@ export function extractStylesFromHtml(
 
   const combinedStyles = styleContents.join("\n");
 
-  // Regex for CSS variables: --primary-color: #3b82f6;
+  // 4. Regex for CSS variables with brand prioritization
   const varMatches = combinedStyles.matchAll(/--([a-zA-Z0-9_-]+)\s*:\s*([^;}\n]+)/g);
   for (const m of varMatches) {
     const varName = `--${m[1].trim()}`;
@@ -528,26 +668,41 @@ export function extractStylesFromHtml(
       cssVariables[varName] = varValue;
     }
 
-    // Check if variable value is a color
-    if (/^#(?:[0-9a-fA-F]{3,8})\b|^(?:rgb|hsl)a?\(/i.test(varValue)) {
-      colorSet.add(varValue);
+    if (/^#(?:[0-9a-fA-F]{3,8})\b/i.test(varValue)) {
+      const isBrandVar = /brand|primary|accent|theme|essential|spice|main|action/i.test(varName);
+      addColorScore(varValue, isBrandVar ? 75 : 30);
     }
   }
 
-  // Regex for Hex colors (#fff, #1a202c, etc.)
+  // 5. Frequency analysis across all hex colors in styles and HTML
   const hexMatches = (rawHtml + combinedStyles).match(/#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g);
   if (hexMatches) {
-    for (const hex of hexMatches.slice(0, 35)) {
-      colorSet.add(hex.toLowerCase());
+    for (const hex of hexMatches) {
+      addColorScore(hex, 1);
     }
   }
 
-  // Regex for rgb/hsl colors
-  const rgbMatches = (rawHtml + combinedStyles).match(/(?:rgb|hsl)a?\([^)]+\)/gi);
-  if (rgbMatches) {
-    for (const c of rgbMatches.slice(0, 20)) {
-      colorSet.add(c.trim());
-    }
+  // 6. Check for known brand seeds on client-rendered SPAs
+  if (targetUrl) {
+    try {
+      const parsed = new URL(targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`);
+      const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+      for (const [brandDomain, seed] of Object.entries(KNOWN_BRAND_SEEDS)) {
+        if (host === brandDomain || host.endsWith(`.${brandDomain}`)) {
+          let scoreBonus = 200;
+          for (const seedHex of seed.colors) {
+            addColorScore(seedHex, scoreBonus);
+            scoreBonus -= 15;
+          }
+          if (seed.fonts) {
+            for (const font of seed.fonts) {
+              fontSet.add(font);
+            }
+          }
+          break;
+        }
+      }
+    } catch {}
   }
 
   // Regex for font families
@@ -645,8 +800,12 @@ export function extractStylesFromHtml(
     }
   });
 
+  const sortedColors = Array.from(colorScores.keys()).sort(
+    (a, b) => (colorScores.get(b) || 0) - (colorScores.get(a) || 0)
+  );
+
   return {
-    colors: Array.from(colorSet).slice(0, 25),
+    colors: sortedColors.slice(0, 30),
     fonts: Array.from(fontSet).slice(0, 10),
     cssVariables,
     tailwindClasses: Array.from(tailwindClassSet).slice(0, 50),
@@ -655,7 +814,7 @@ export function extractStylesFromHtml(
     shadows: Array.from(shadowSet).slice(0, 8),
     radii: Array.from(radiusSet).slice(0, 8),
     mediaQueries: Array.from(mediaQuerySet).slice(0, 8),
-    rawStylesSummary: `Extracted ${colorSet.size} color tokens, ${Object.keys(cssVariables).length} CSS variables, and ${tailwindClassSet.size} utility classes.`,
+    rawStylesSummary: `Extracted ${sortedColors.length} color tokens, ${Object.keys(cssVariables).length} CSS variables, and ${tailwindClassSet.size} utility classes.`,
   };
 }
 
@@ -1067,7 +1226,7 @@ export async function scrapeSinglePage(
   }
 
   // Extract styles and logic with language detection
-  const styles = extractStylesFromHtml($, rawText, externalCss);
+  const styles = extractStylesFromHtml($, rawText, externalCss, url);
   const logic = extractLogicFromHtml($, rawText, markdown);
 
   let enrichedMarkdown = `# ${pageTitle}\n\n`;
@@ -1141,7 +1300,7 @@ async function scrapeWithFirecrawl(
 
     const $ = cheerio.load(html || "<div></div>");
     const externalCss = await fetchExternalStylesheets($, url, 2);
-    const styles = extractStylesFromHtml($, html, externalCss);
+    const styles = extractStylesFromHtml($, html, externalCss, url);
     const logic = extractLogicFromHtml($, html, markdown);
 
     return {

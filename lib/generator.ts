@@ -15,7 +15,18 @@ Formulate an authoritative, production-grade "DESIGN.md" specification following
 Rules:
 1. Produce a clean identifier name (snake_case, 3-64 chars) matching ^[a-z0-9_]+$.
 2. Formulate an aestheticSummary describing the site's design archetype concisely without generic purple/violet AI-slop cliches.
-3. Extract and organize Semantic Colors into a comprehensive palette (Obsidian Canvas, Void, Charcoal Card, Slate Edge, Iron Veil, Smoke, Ash, Frost, Linen, Snow, Electric Iris, Ember Pulse, Molasses).
+3. Extract and organize Semantic Colors into an authentic, brand-accurate palette following the canonical DESIGN.md standard:
+   - Primary: Dominant brand action/CTA (e.g. Spotify Green, Stripe Blurple, Vercel Blue)
+   - Secondary: Supporting interactive hue or secondary action
+   - Accent: Warm or vibrant highlight / notification badge
+   - Background: Main canvas background (dark or light depending on brand theme)
+   - Deep: Deepest substrate layer for backdrops and modal scrims
+   - Surface: Elevated card and panel container surfaces
+   - Border: Hairline borders and dividers
+   - Muted: Subdued secondary text, disabled states, and tag washes
+   - Text: High-contrast primary body and heading text
+   - Error: Form error alerts and negative badges
+   CRITICAL: Give colors authentic, human names matching the target brand (e.g. "Spotify Green", "Base Charcoal", "Subdued Fog", "Alert Crimson"). NEVER blindly copy Linear's proprietary names ("Electric Iris", "Ember Pulse", "Molasses") onto foreign brands.
 4. Extract Typography scale (caption, body, body-lg, subheading, heading-sm, heading, display-sm, display) with sizes in px, line-heights, weights, and letter-spacing.
 5. Formulate a complete, spec-compliant "DESIGN.md" markdown document matching the exact Style Reference structure:
    - # [Brand] - Style Reference
@@ -117,126 +128,254 @@ function getLuminance(hex: string): number {
   return 0.5;
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  let clean = hex.replace("#", "").trim();
+  if (clean.length === 3) {
+    clean = clean.split("").map((c) => c + c).join("");
+  }
+  const num = parseInt(clean, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+}
+
+function getSaturation(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const max = Math.max(r, g, b) / 255;
+  const min = Math.min(r, g, b) / 255;
+  const delta = max - min;
+  if (max === 0) return 0;
+  return delta / max;
+}
+
+function getHue(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+  const max = Math.max(rNorm, gNorm, bNorm);
+  const min = Math.min(rNorm, gNorm, bNorm);
+  const delta = max - min;
+  if (delta === 0) return 0;
+
+  let hue = 0;
+  if (max === rNorm) {
+    hue = ((gNorm - bNorm) / delta) % 6;
+  } else if (max === gNorm) {
+    hue = (bNorm - rNorm) / delta + 2;
+  } else {
+    hue = (rNorm - gNorm) / delta + 4;
+  }
+  hue = Math.round(hue * 60);
+  if (hue < 0) hue += 360;
+  return hue;
+}
+
+function getHueFamilyName(hue: number): string {
+  if (hue >= 345 || hue < 15) return "Crimson";
+  if (hue >= 15 && hue < 45) return "Amber";
+  if (hue >= 45 && hue < 70) return "Gold";
+  if (hue >= 70 && hue < 165) return "Green";
+  if (hue >= 165 && hue < 200) return "Cyan";
+  if (hue >= 200 && hue < 260) return "Blue";
+  if (hue >= 260 && hue < 295) return "Purple";
+  if (hue >= 295 && hue < 345) return "Magenta";
+  return "Accent";
+}
+
+/**
+ * Robust domain, brand, and title parser
+ * Extracts e.g. "Spotify" from "open.spotify.com" without hardcoding ".app"
+ */
+export function extractBrandAndDomain(
+  rawUrl: string,
+  pageTitle?: string
+): { brandName: string; domainSlug: string; title: string; host: string } {
+  let host = "web";
+  let brandName = "Web";
+  let domainSlug = "web";
+
+  try {
+    const parsedUrl = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`);
+    host = parsedUrl.hostname.replace(/^www\./, "").toLowerCase();
+    const parts = host.split(".");
+
+    const subdomains = new Set([
+      "open", "app", "web", "m", "docs", "api", "auth", "login", "play",
+      "dashboard", "studio", "cloud", "beta", "dev", "staging", "admin", "my"
+    ]);
+
+    let candidate = "";
+    if (parts.length >= 3 && subdomains.has(parts[0])) {
+      candidate = parts[1];
+    } else if (parts.length >= 3 && parts[parts.length - 2].length <= 3 && parts[parts.length - 1].length <= 2) {
+      candidate = parts[parts.length - 3];
+    } else if (parts.length >= 2) {
+      candidate = parts[parts.length - 2];
+    } else {
+      candidate = parts[0];
+    }
+
+    if (candidate) {
+      domainSlug = candidate.toLowerCase().replace(/[^a-z0-9]/g, "_") || "web";
+      brandName = domainSlug.charAt(0).toUpperCase() + domainSlug.slice(1);
+    }
+  } catch {
+    domainSlug = "web";
+    brandName = "Web";
+  }
+
+  let cleanTitle = "";
+  if (pageTitle && pageTitle.trim()) {
+    const firstSegment = pageTitle.split(/\s*[-:|·•\u2013\u2014]\s*/)[0].trim();
+    if (firstSegment && firstSegment.length >= 2 && firstSegment.length <= 40) {
+      cleanTitle = firstSegment;
+    }
+  }
+
+  const finalBrand = cleanTitle || brandName;
+  const title = `${finalBrand} Design System`;
+
+  return {
+    brandName: finalBrand,
+    domainSlug,
+    title,
+    host,
+  };
+}
+
 /**
  * Categorize scraped raw colors into semantic roles matching the Style Reference standard
  */
 export function deriveSemanticColors(
   colors: string[],
-  siteTitle: string
+  siteTitle: string,
+  targetUrl?: string
 ): SemanticColorToken[] {
   const validHexes = colors
     .filter((c) => /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c.trim()))
-    .map((c) => c.trim().toLowerCase());
+    .map((c) => {
+      const clean = c.trim().toLowerCase();
+      if (clean.length === 4) {
+        return `#${clean[1]}${clean[1]}${clean[2]}${clean[2]}${clean[3]}${clean[3]}`;
+      }
+      return clean;
+    });
 
   const unique = Array.from(new Set(validHexes));
+  const { brandName } = extractBrandAndDomain(targetUrl || "", siteTitle);
 
-  // Sort by luminance
-  const sorted = [...unique].sort((a, b) => getLuminance(a) - getLuminance(b));
+  const darkColors = unique.filter((c) => getLuminance(c) < 0.22).sort((a, b) => getLuminance(a) - getLuminance(b));
+  const lightColors = unique.filter((c) => getLuminance(c) > 0.78).sort((a, b) => getLuminance(a) - getLuminance(b));
+  const midColors = unique.filter((c) => getLuminance(c) >= 0.22 && getLuminance(c) <= 0.78);
 
-  const darkColors = sorted.filter((c) => getLuminance(c) < 0.2);
-  const lightColors = sorted.filter((c) => getLuminance(c) > 0.75);
-  const midColors = sorted.filter((c) => getLuminance(c) >= 0.2 && getLuminance(c) <= 0.75);
+  const vibrantColors = unique
+    .filter((c) => getSaturation(c) >= 0.35 && getLuminance(c) >= 0.12 && getLuminance(c) <= 0.88)
+    .sort((a, b) => getSaturation(b) - getSaturation(a));
 
-  const isDarkCanvas = darkColors.length > 0;
+  const isDarkCanvas = darkColors.length >= Math.max(1, lightColors.length);
 
-  const bgHex = isDarkCanvas ? (darkColors[0] || "#303236") : (lightColors[lightColors.length - 1] || "#ffffff");
-  const voidHex = isDarkCanvas ? "#090a0c" : "#f1f2f4";
-  const cardHex = isDarkCanvas ? (darkColors[1] || "#111111") : (lightColors[lightColors.length - 2] || "#f8f9fa");
-  const borderHex = isDarkCanvas ? (darkColors[darkColors.length - 1] || "#4a4b50") : "#d1d1d1";
-  const mutedWashHex = isDarkCanvas ? "#6b6c6d" : "#e5e5e7";
-  const smokeHex = midColors[0] || (isDarkCanvas ? "#95979e" : "#64748b");
-  const ashHex = midColors[1] || (isDarkCanvas ? "#a9a9aa" : "#94a3b8");
-  const frostHex = isDarkCanvas ? "#d1d1d1" : "#cbd5e1";
-  const linenHex = isDarkCanvas ? "#e5e5e7" : "#f6f6f6";
-  const snowHex = "#ffffff";
+  const primaryHex = vibrantColors[0] || (isDarkCanvas ? "#5683da" : "#2563eb");
+  const primaryHue = getHue(primaryHex);
+  const primaryName = `${brandName} ${getHueFamilyName(primaryHue)}`;
 
-  // Vivid colors for primary and secondary accents
-  const primaryHex = midColors.find((c) => {
-    const lum = getLuminance(c);
-    return lum > 0.15 && lum < 0.7;
-  }) || (isDarkCanvas ? "#5683da" : "#2563eb");
+  const accentCandidate = vibrantColors.find((c) => {
+    if (c === primaryHex) return false;
+    const diff = Math.abs(getHue(c) - primaryHue);
+    return diff > 30 && diff < 330;
+  }) || vibrantColors[1];
+  const accentHex = accentCandidate || (isDarkCanvas ? "#ff8964" : "#f97316");
+  const accentName = `${getHueFamilyName(getHue(accentHex))} Accent`;
 
-  const accentHex = midColors.find((c) => c !== primaryHex && getLuminance(c) > 0.25) || (isDarkCanvas ? "#ff8964" : "#f97316");
-  const molassesHex = isDarkCanvas ? "#5a250a" : "#431407";
+  const errorCandidate = unique.find((c) => {
+    const hue = getHue(c);
+    const sat = getSaturation(c);
+    return (hue < 25 || hue > 335) && sat > 0.4;
+  });
+  const errorHex = errorCandidate || "#ff4747";
+
+  const bgHex = isDarkCanvas
+    ? (darkColors[0] || "#121212")
+    : (lightColors[lightColors.length - 1] || "#ffffff");
+
+  const voidHex = isDarkCanvas ? "#090a0c" : "#f1f3f5";
+  const cardHex = isDarkCanvas
+    ? (darkColors[1] || (darkColors[0] ? "#181818" : "#1e1e1e"))
+    : (lightColors[0] || "#f8f9fa");
+
+  const borderHex = isDarkCanvas
+    ? (darkColors[darkColors.length - 1] || "#282828")
+    : "#e2e8f0";
+
+  const mutedHex = isDarkCanvas
+    ? (midColors.find((c) => getSaturation(c) < 0.25) || "#b3b3b3")
+    : (midColors.find((c) => getSaturation(c) < 0.25) || "#64748b");
+
+  const secondaryHex = midColors.find((c) => c !== primaryHex && c !== accentHex) || (isDarkCanvas ? "#282828" : "#e2e8f0");
+  const textHex = isDarkCanvas ? "#ffffff" : "#0f172a";
 
   return [
     {
       role: "background",
-      name: isDarkCanvas ? "Obsidian Canvas" : "Linen Canvas",
+      name: isDarkCanvas ? "Dark Canvas" : "Light Canvas",
       hex: bgHex,
-      usage: "Page background, dominant surface: near-black with a whisper of warmth, default stage for all content",
+      usage: "Page background, dominant surface: default stage for all content",
     },
     {
       role: "deep",
-      name: isDarkCanvas ? "Void" : "Deep Substrate",
+      name: "Deep Substrate",
       hex: voidHex,
-      usage: "Deepest surface layer for hero gradients, modal backdrops, and borders that need to disappear into the canvas",
+      usage: "Deepest surface layer for hero gradients, modal backdrops, and recessed containers",
     },
     {
       role: "surface",
-      name: isDarkCanvas ? "Charcoal Card" : "Elevated Surface",
+      name: "Elevated Surface",
       hex: cardHex,
       usage: "Elevated card and panel surfaces sitting one step above the canvas",
     },
     {
       role: "border",
-      name: isDarkCanvas ? "Slate Edge" : "Hairline Edge",
+      name: "Hairline Border",
       hex: borderHex,
-      usage: "Hairline borders and dividers on dark surfaces",
+      usage: "Hairline borders, dividers, and container outlines",
     },
     {
       role: "muted",
-      name: "Iron Veil",
-      hex: mutedWashHex,
-      usage: "Muted backgrounds for tags, list-item fills, and disabled state washes",
+      name: "Subdued Text",
+      hex: mutedHex,
+      usage: "Muted secondary text, inactive captions, and subtle list item fills",
     },
     {
       role: "secondary",
-      name: "Smoke",
-      hex: smokeHex,
-      usage: "Icon strokes, secondary text, and inactive controls: the workhorse mid-gray",
-    },
-    {
-      role: "tertiary",
-      name: "Ash",
-      hex: ashHex,
-      usage: "Tertiary text and subtle body borders in content-heavy lists",
-    },
-    {
-      role: "light-border",
-      name: "Frost",
-      hex: frostHex,
-      usage: "Light-mode borders, input fields, and secondary CTA borders",
-    },
-    {
-      role: "light-surface",
-      name: "Linen",
-      hex: linenHex,
-      usage: "Light-mode surface tint and subtle section dividers in white backgrounds",
+      name: "Secondary Surface",
+      hex: secondaryHex,
+      usage: "Secondary buttons, inactive controls, and supporting interactive elements",
     },
     {
       role: "text",
-      name: "Snow",
-      hex: snowHex,
-      usage: "Hairline borders, dividers, input outlines, and card edges on light surfaces. Do not promote it to primary CTA",
+      name: isDarkCanvas ? "Snow White" : "Deep Charcoal",
+      hex: textHex,
+      usage: "High-contrast text for headings, primary labels, and clear body copy",
     },
     {
       role: "primary",
-      name: "Electric Iris",
+      name: primaryName,
       hex: primaryHex,
-      usage: "Primary action background, active nav indicator, hero cool stop: vivid and switched-on",
+      usage: "Primary action background, active nav indicators, and dominant brand focus",
     },
     {
       role: "accent",
-      name: "Ember Pulse",
+      name: accentName,
       hex: accentHex,
-      usage: "Secondary accent, hero warm stop, notification dot, illustration highlight",
+      usage: "Secondary accent, notification indicators, and vibrant highlights",
     },
     {
-      role: "dark-accent",
-      name: "Molasses",
-      hex: molassesHex,
-      usage: "Deep ember tone for dark-context borders, icon strokes, and tag fills when coral would be too bright",
+      role: "error",
+      name: "Alert Red",
+      hex: errorHex,
+      usage: "Destructive actions, error badges, form validation alerts, and warnings",
     },
   ];
 }
@@ -1248,21 +1387,12 @@ Guidelines:
  * Produces an exceptional DESIGN.md, tokens, and specimens without requiring an LLM API key.
  */
 export function heuristicSynthesizeDesignSystem(scrapeResult: ScrapeResult): DesignSystemData {
-  let domainSlug = "web";
   const rawUrl = scrapeResult.targetUrl || "https://example.com";
-  try {
-    const parsedUrl = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`);
-    const hostParts = parsedUrl.hostname.replace(/^www\./, "").split(".");
-    domainSlug = hostParts[0].toLowerCase().replace(/[^a-z0-9]/g, "_") || "web";
-  } catch {
-    domainSlug = "web";
-  }
+  const { brandName, domainSlug, title } = extractBrandAndDomain(rawUrl, scrapeResult.title);
 
   const name = sanitizeName(`${domainSlug}_design`);
-  const title = scrapeResult.title || `${domainSlug.charAt(0).toUpperCase() + domainSlug.slice(1)} Design System`;
-
   const extractedColors = scrapeResult.styles?.colors || [];
-  const semanticColors = deriveSemanticColors(extractedColors, title);
+  const semanticColors = deriveSemanticColors(extractedColors, title, rawUrl);
 
   const primaryFont = scrapeResult.styles?.fonts?.[0] || "Inter, -apple-system, sans-serif";
   const headingFont = scrapeResult.styles?.fonts?.[1] || primaryFont;
@@ -1384,7 +1514,7 @@ function parseAndNormalizeDesignOutput(
 
   const name = sanitizeName(
     parsed.name,
-    `design_${new URL(targetUrl).hostname.replace(/[^a-z0-9]/gi, "_")}`
+    fallbackData.name
   );
 
   const title = parsed.title || fallbackData.title;
