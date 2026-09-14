@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Drawer } from "./ui/drawer";
 import { ApiKeysConfig } from "@/lib/types";
 import { Key, Eye, EyeOff, Sparkles, Cpu, ExternalLink, Check } from "lucide-react";
@@ -24,13 +24,18 @@ export function ConfigDrawer({
   const [showFirecrawl, setShowFirecrawl] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Sync state whenever config prop changes or drawer opens
+  useEffect(() => {
+    setLocalConfig(config);
+  }, [config, isOpen]);
+
   const handleSave = () => {
     onSaveConfig(localConfig);
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
       onClose();
-    }, 600);
+    }, 500);
   };
 
   const handleClearAll = () => {
@@ -39,6 +44,8 @@ export function ConfigDrawer({
       geminiApiKey: "",
       firecrawlApiKey: "",
       preferredLlm: "auto",
+      defaultCrawlDepth: 1,
+      maxCrawlPages: 5,
     };
     setLocalConfig(cleared);
     onSaveConfig(cleared);
@@ -58,7 +65,7 @@ export function ConfigDrawer({
           <div className="w-2 h-2 rounded-full bg-[#3186ff] mt-1 shrink-0 animate-pulse" />
           <div>
             <span className="font-semibold text-white">Zero-Cost Mode Active:</span>{" "}
-            No API keys required. SkillForge extracts DOM styles and interactive logic out of the box. Add your free Gemini or Groq key for multi-step reasoning.
+            No API keys required. DesignMD extracts DOM styles and design tokens out of the box. Add your free Gemini or Groq key for multi-step reasoning.
           </div>
         </div>
 

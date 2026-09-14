@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SkillForge • URL-to-SKILL.md Engine",
+  title: "DesignMD • Generate DESIGN.md from Any Website",
   description:
-    "Extract visual design system tokens and interactive logic from any website into an authoritative SKILL.md for Google Gemini, ChatGPT, Cursor, and Claude.",
+    "Explore any website and generate a spec-compliant DESIGN.md with design principles, semantic colors, typography scale, component specs, and exportable tokens for Cursor, Claude Code, Gemini, and ChatGPT.",
 };
 
 export default function RootLayout({

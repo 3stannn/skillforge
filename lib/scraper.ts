@@ -147,7 +147,7 @@ export async function fetchExternalStylesheets(
         const res = await fetch(sheetUrl, {
           headers: {
             "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 SkillForge/2.0",
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 DesignMD/2.0",
             Accept: "text/css,*/*;q=0.1",
           },
           signal: controller.signal,
@@ -955,7 +955,7 @@ export async function scrapeSinglePage(
     method: "GET",
     headers: {
       "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 SkillForge/2.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 DesignMD/2.0",
       Accept:
         "text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7",
       "Accept-Language": "en-US,en;q=0.9",

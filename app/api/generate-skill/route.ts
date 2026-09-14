@@ -61,18 +61,18 @@ export async function POST(req: NextRequest) {
         try {
           const isDeepCrawl = (crawlDepth ?? 0) > 0;
 
-          // STEP 1: Scraping target URL & exploring routes/stylesheets...
+          // STEP 1: Exploring target URL & crawling page structure...
           await sendUpdate({
             step: 1,
             status: "active",
             message: isDeepCrawl
-              ? "Deep crawling website & mapping route architecture..."
-              : "Scraping target URL & extracting styles + scripts...",
+              ? "Exploring website hierarchy & crawling sub-pages..."
+              : "Exploring target URL & fetching stylesheets...",
             details: isDeepCrawl
-              ? `Discovering internal routes, documentation, and external CSS (Depth: ${crawlDepth})...`
+              ? `Discovering internal routes, external CSS, and page components (Depth: ${crawlDepth})...`
               : firecrawlApiKey
               ? "Connecting via Firecrawl engine..."
-              : "Analyzing HTML DOM, stylesheets, and scripts...",
+              : "Analyzing HTML DOM, stylesheets, and computed styles...",
           });
 
           const scrapeResult = await scrapeTargetUrl(url, firecrawlApiKey, {
@@ -84,8 +84,8 @@ export async function POST(req: NextRequest) {
                 step: 1,
                 status: "active",
                 message: isDeepCrawl
-                  ? `Deep crawling (${progress.current}/${progress.total} pages)...`
-                  : "Inspecting styles and logic...",
+                  ? `Exploring site (${progress.current}/${progress.total} pages)...`
+                  : "Inspecting styles and DOM...",
                 details: progress.stage || `Scanning ${progress.currentUrl}`,
               });
             },
@@ -96,17 +96,17 @@ export async function POST(req: NextRequest) {
             step: 1,
             status: "completed",
             message: isDeepCrawl
-              ? `Explored ${pagesCount} pages across site architecture`
-              : "Page content, styles, and scripts retrieved",
-            details: `Found ${scrapeResult.styles.colors.length} colors, ${scrapeResult.styles.tailwindClasses.length} utility classes, and ${scrapeResult.logic.frameworks?.join(", ") || "Vanilla Web"}`,
+              ? `Explored ${pagesCount} pages across site hierarchy`
+              : "Target page and external stylesheets retrieved",
+            details: `Found ${scrapeResult.styles.colors.length} color tokens, ${scrapeResult.styles.tailwindClasses.length} utility classes, and ${scrapeResult.logic.frameworks?.join(", ") || "standard web styles"}`,
           });
 
-          // STEP 2: Analyzing visual design system & interactive logic...
+          // STEP 2: Extracting design tokens, colors & typography...
           await sendUpdate({
             step: 2,
             status: "active",
-            message: "Analyzing visual design system & interactive logic...",
-            details: "Formulating typography hierarchy, color palette, layout rules, and event flows...",
+            message: "Extracting design tokens, colors & typography hierarchy...",
+            details: "Deriving semantic palette, typography scale, spacing, border radii, and shadows...",
           });
 
           await new Promise((r) => setTimeout(r, 300));
@@ -114,19 +114,19 @@ export async function POST(req: NextRequest) {
           await sendUpdate({
             step: 2,
             status: "completed",
-            message: "Design tokens and interactive state flow analyzed",
-            details: `Identified ${scrapeResult.styles.layoutPatterns.join(", ") || "Component layouts"}`,
+            message: "Design tokens and semantic roles categorized",
+            details: `Identified ${scrapeResult.styles.fonts.join(", ") || "Modern sans"} typefaces and structural layouts`,
           });
 
-          // STEP 3: Synthesizing universal SKILL.md for all AI models (Gemini, GPT, Claude)...
+          // STEP 3: Synthesizing spec-compliant DESIGN.md with AI...
           await sendUpdate({
             step: 3,
             status: "active",
-            message: "Synthesizing universal SKILL.md for all AI models (Gemini, GPT, Claude)...",
-            details: "Constructing canonical YAML frontmatter, design specifications, and model directives...",
+            message: "Synthesizing spec-compliant DESIGN.md (Google Stitch standard)...",
+            details: "Formulating design principles, semantic roles, component specifications, and agent directives...",
           });
 
-          const skillResponse = await generateUniversalSkill(scrapeResult, {
+          const designResponse = await generateUniversalSkill(scrapeResult, {
             groqApiKey,
             geminiApiKey,
             preferredLlm,
@@ -134,45 +134,45 @@ export async function POST(req: NextRequest) {
 
           // Attach deep crawl metadata to response
           if (scrapeResult.crawledPages && scrapeResult.crawledPages.length > 0) {
-            skillResponse.crawledPages = scrapeResult.crawledPages;
+            designResponse.crawledPages = scrapeResult.crawledPages;
           }
           if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
-            skillResponse.frameworks = scrapeResult.logic.frameworks;
+            designResponse.frameworks = scrapeResult.logic.frameworks;
           }
           const detectedLanguages = scrapeResult.languages || scrapeResult.logic.languages;
-          if (detectedLanguages && detectedLanguages.length > 0 && (!skillResponse.languages || skillResponse.languages.length === 0)) {
-            skillResponse.languages = detectedLanguages;
+          if (detectedLanguages && detectedLanguages.length > 0 && (!designResponse.languages || designResponse.languages.length === 0)) {
+            designResponse.languages = detectedLanguages;
           }
 
           await sendUpdate({
             step: 3,
             status: "completed",
-            message: `Synthesized skill: "${skillResponse.name}"`,
-            details: `Complete with YAML frontmatter, design tokens, and ${skillResponse.languages?.length || 0} detected languages`,
+            message: `Synthesized DESIGN.md for "${designResponse.title}"`,
+            details: `Structured with ${designResponse.semanticColors.length} semantic colors and ${designResponse.typographyScale.length} type scale levels`,
           });
 
-          // STEP 4: Compiling component code & cross-model adapters...
+          // STEP 4: Compiling Tailwind tokens, CSS variables & live specimens...
           await sendUpdate({
             step: 4,
             status: "active",
-            message: "Compiling component code & cross-model adapters...",
-            details: "Building React + Tailwind TSX component and export prompts for Gemini, Cursor, ChatGPT, and Claude...",
+            message: "Compiling Tailwind tokens, CSS variables & live specimens...",
+            details: "Generating Tailwind v4/v3 theme configs, CSS custom properties, and interactive preview specimens...",
           });
 
           await sendUpdate({
             step: 4,
             status: "completed",
-            message: "Universal SKILL.md package ready!",
-            details: "Compatible with Google Gemini, ChatGPT, Cursor, and Claude",
-            result: skillResponse,
+            message: "DESIGN.md & design tokens package ready!",
+            details: "Ready for Cursor, Claude Code, v0, Lovable, and human developers",
+            result: designResponse,
           });
         } catch (err: any) {
-          console.error("Error in skill generation:", err);
+          console.error("Error in design generation:", err);
           await sendUpdate({
             step: 4,
             status: "error",
-            message: "Failed to synthesize universal skill",
-            error: err.message || "An unexpected error occurred during synthesis.",
+            message: "Failed to synthesize DESIGN.md",
+            error: err.message || "An unexpected error occurred during design extraction.",
           });
         } finally {
           await writer.close();
@@ -194,24 +194,24 @@ export async function POST(req: NextRequest) {
       maxPages,
       fetchExternalCss: true,
     });
-    const skillResponse = await generateUniversalSkill(scrapeResult, {
+    const designResponse = await generateUniversalSkill(scrapeResult, {
       groqApiKey,
       geminiApiKey,
       preferredLlm,
     });
 
     if (scrapeResult.crawledPages && scrapeResult.crawledPages.length > 0) {
-      skillResponse.crawledPages = scrapeResult.crawledPages;
+      designResponse.crawledPages = scrapeResult.crawledPages;
     }
     if (scrapeResult.logic.frameworks && scrapeResult.logic.frameworks.length > 0) {
-      skillResponse.frameworks = scrapeResult.logic.frameworks;
+      designResponse.frameworks = scrapeResult.logic.frameworks;
     }
     const detectedLanguages = scrapeResult.languages || scrapeResult.logic.languages;
-    if (detectedLanguages && detectedLanguages.length > 0 && (!skillResponse.languages || skillResponse.languages.length === 0)) {
-      skillResponse.languages = detectedLanguages;
+    if (detectedLanguages && detectedLanguages.length > 0 && (!designResponse.languages || designResponse.languages.length === 0)) {
+      designResponse.languages = detectedLanguages;
     }
 
-    return NextResponse.json(skillResponse);
+    return NextResponse.json(designResponse);
   } catch (error: any) {
     console.error("API error /api/generate-skill:", error);
     return NextResponse.json(

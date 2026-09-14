@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { Dialog } from "./ui/dialog";
 import { Copy, Check, Download, Sparkles, Terminal, Bot, Cpu } from "lucide-react";
-import { UniversalSkill } from "@/lib/types";
+import { DesignSystemData } from "@/lib/types";
 
 export interface ModelExportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  skill: UniversalSkill;
+  skill: DesignSystemData;
   onDownloadZip: () => void;
 }
 
@@ -18,14 +18,14 @@ export function ModelExportModal({
   skill,
   onDownloadZip,
 }: ModelExportModalProps) {
-  const [activeModel, setActiveModel] = useState<"gemini" | "cursor" | "chatgpt" | "claude">("gemini");
+  const [activeModel, setActiveModel] = useState<"cursor" | "claude" | "gemini" | "chatgpt">("cursor");
   const [copied, setCopied] = useState(false);
 
   const modelOptions = [
+    { id: "cursor", name: "Cursor & Windsurf", icon: Terminal, color: "text-[#3186ff]" },
+    { id: "claude", name: "Claude Code", icon: Cpu, color: "text-[#d97706]" },
     { id: "gemini", name: "Google Gemini", icon: Sparkles, color: "text-[#1a73e8]" },
-    { id: "cursor", name: "Cursor & Windsurf", icon: Terminal, color: "text-[#b06000]" },
     { id: "chatgpt", name: "ChatGPT / OpenAI", icon: Bot, color: "text-[#188038]" },
-    { id: "claude", name: "Anthropic Claude", icon: Cpu, color: "text-[#5f6368]" },
   ] as const;
 
   const currentPrompt =
@@ -47,8 +47,8 @@ export function ModelExportModal({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Export Skill for All AI Models"
-      description="Copy model-specific instructions or download the complete project bundle."
+      title="Connect Design System to AI Agents"
+      description="Copy agent directives or download the complete design system package."
       maxWidth="xl"
     >
       <div className="space-y-4 text-sm text-[#bdc1c6]">
@@ -80,24 +80,27 @@ export function ModelExportModal({
 
         {/* Model Instructions Banner */}
         <div className="p-3 bg-[#121316] rounded-xl border border-[#262930] text-xs text-[#9aa0a6] font-mono leading-relaxed">
+          {activeModel === "cursor" && (
+            <p>
+              <strong className="text-white">Cursor & Windsurf:</strong> Save as{" "}
+              <code className="text-[#3186ff] font-bold">.cursorrules</code> in your project root alongside{" "}
+              <code className="text-white font-bold">DESIGN.md</code>.
+            </p>
+          )}
+          {activeModel === "claude" && (
+            <p>
+              <strong className="text-white">Claude Code:</strong> Save as{" "}
+              <code className="text-[#d97706] font-bold">CLAUDE.md</code> in your project root, or add to Claude Project Knowledge.
+            </p>
+          )}
           {activeModel === "gemini" && (
             <p>
               <strong className="text-white">Google Gemini:</strong> Paste into Google AI Studio (System Instructions) or Gemini API system instructions.
             </p>
           )}
-          {activeModel === "cursor" && (
-            <p>
-              <strong className="text-white">Cursor & Windsurf:</strong> Save as <code className="text-[#3186ff] font-bold">.cursorrules</code> in your project root.
-            </p>
-          )}
           {activeModel === "chatgpt" && (
             <p>
               <strong className="text-white">ChatGPT / OpenAI:</strong> Paste into the Custom GPT &quot;Instructions&quot; field.
-            </p>
-          )}
-          {activeModel === "claude" && (
-            <p>
-              <strong className="text-white">Anthropic Claude:</strong> Add to Claude Project Knowledge or custom instructions.
             </p>
           )}
         </div>
@@ -106,7 +109,7 @@ export function ModelExportModal({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
-              Prompt Template
+              Agent Directives
             </span>
             <button
               type="button"
@@ -121,7 +124,7 @@ export function ModelExportModal({
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Prompt</span>
+                  <span>Copy Rules</span>
                 </>
               )}
             </button>
@@ -132,21 +135,17 @@ export function ModelExportModal({
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#262930]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-full text-xs font-medium text-[#9aa0a6] hover:text-white hover:bg-[#16181d] transition-colors cursor-pointer"
-          >
-            Close
-          </button>
+        {/* Download Zip Action */}
+        <div className="pt-2 flex items-center justify-between border-t border-[#262930]">
+          <span className="text-xs text-[#9aa0a6]">
+            Includes DESIGN.md, tokens.css, tailwind.config.js, tokens.json & Specimens.tsx
+          </span>
           <button
             type="button"
             onClick={onDownloadZip}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-[#e8eaed] text-black text-xs font-medium shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium text-white bg-[#121316] hover:bg-[#1e2026] border border-[#262930] hover:border-[#3186ff]/40 shadow-xs transition-colors cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 text-[#3186ff]" />
             <span>Download All (.zip)</span>
           </button>
         </div>
@@ -154,3 +153,5 @@ export function ModelExportModal({
     </Dialog>
   );
 }
+
+export default ModelExportModal;

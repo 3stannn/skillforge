@@ -1,81 +1,1325 @@
 import { Groq } from "groq-sdk";
 import { GoogleGenAI } from "@google/genai";
-import { UniversalSkill, ModelPrompts } from "./types";
+import {
+  DesignSystemData,
+  SemanticColorToken,
+  TypographyScaleItem,
+  ModelPrompts,
+} from "./types";
 import { ScrapeResult } from "./scraper";
 
-const SYSTEM_PROMPT = `You are a world-class AI Systems Architect and Lead Design Systems Engineer.
-Analyze the provided scraped webpage styles, logic, DOM structure, and markdown.
-Formulate a production-grade, universal "SKILL.md" specification and interactive component implementation usable by ALL modern AI models (Google Gemini, OpenAI ChatGPT, Cursor / Windsurf, and Claude).
+const SYSTEM_PROMPT = `You are a world-class Design Systems Architect and Lead Frontend Systems Engineer.
+Analyze the provided scraped webpage styles, layout tokens, DOM structure, and markdown.
+Formulate an authoritative, production-grade "DESIGN.md" specification following the Google Stitch and DesignMD Style Reference standard, plus matching code tokens (Tailwind v4/v3, CSS variables, W3C design tokens JSON, and interactive React specimen components).
 
 Rules:
 1. Produce a clean identifier name (snake_case, 3-64 chars) matching ^[a-z0-9_]+$.
-2. Formulate a complete, canonical "SKILL.md" document with:
-   - Valid YAML frontmatter (name, description)
-   - # Title & Overview
-   - ## Discovered Site Architecture & Multi-Page Scope (if multiple pages were crawled)
-   - ## Visual Design System & Styling Tokens (exact color codes, CSS variables, typography hierarchy, layout rules, Tailwind classes, and visual effects like glassmorphism, animations, or shadows)
-   - ## Detected Languages & Code Stacks (all detected programming languages, CLI environments, and code dialects found on the site, with implementation patterns)
-   - ## Interactive Logic & State Architecture (state variables, event handlers, forms & validation rules, user interaction loops, and API contracts)
-   - ## Production Implementation Guidelines
-   - ## Multi-Model Directives (instructions for Gemini, ChatGPT, Cursor, Claude)
-3. Construct a standalone, copy-pasteable React + TypeScript + Tailwind CSS component ("componentCode") that faithfully recreates the extracted styles, sub-page navigation, and interactive logic.
-4. Construct tailored instructions for:
-   - "gemini": Google Gemini System Instructions & Persona
-   - "chatgpt": OpenAI Custom GPT Instructions
-   - "cursor": .cursorrules / Windsurf Agent Rules format
-   - "claude": Claude Project Instructions
-5. Detect, compile, and list all programming languages and environments discovered on the page in the "languages" array.
+2. Formulate an aestheticSummary describing the site's design archetype (e.g. "Aurora through a midnight observatory — the hero is a vertical beam of violet melting into coral, and every quiet section below it borrows that same two-color story told at lower volume.").
+3. Extract and organize Semantic Colors into a comprehensive palette (Obsidian Canvas, Void, Charcoal Card, Slate Edge, Iron Veil, Smoke, Ash, Frost, Linen, Snow, Electric Iris, Ember Pulse, Molasses).
+4. Extract Typography scale (caption, body, body-lg, subheading, heading-sm, heading, display-sm, display) with sizes in px, line-heights, weights, and letter-spacing.
+5. Formulate a complete, spec-compliant "DESIGN.md" markdown document matching the exact Style Reference structure:
+   - # [Brand] — Style Reference
+   - > [Poetic description]
+   - **Theme:** mixed (or dark / light)
+   - [Detailed atmosphere & design overview paragraph]
+   - ## Tokens — Colors (Markdown table: Name | Value | Token | Role)
+   - ## Tokens — Typography (Font breakdown with Substitutes, Weights, Sizes, Line height, Letter spacing, Role, plus ### Type Scale table)
+   - ## Tokens — Spacing & Shapes (Base unit 4px, Density comfortable, Spacing Scale table, Border Radius table, Shadows table, Layout specs)
+   - ## Components (Primary Pill Button, Ghost Pill Button, White Pill Button, Feature Card, MetaBrain Card, Product Screenshot Frame, Top Navigation Bar, Aurora Hero Background, Tag/Chip, Stat Counter, Light Section Band, Kanban Board Preview, Inbox/Chat Panel)
+   - ## Do's and Don'ts (### Do and ### Don't)
+   - ## Surfaces (| Level | Name | Value | Purpose |)
+   - ## Elevation (bullet list of exact shadows)
+   - ## Imagery
+   - ## Layout
+   - ## Agent Prompt Guide (primary action, Quick Color Reference, Example Component Prompts)
+   - ## Gradient System
+   - ## Similar Brands (Linear, Vercel, Arc Browser, Resend, Stripe)
+   - ## Quick Start (### CSS Custom Properties and ### Tailwind v4)
+6. Generate clean CSS Custom Properties (:root { ... }) and Tailwind v4 theme (@theme { ... }).
+7. Construct a standalone React + Tailwind specimen TSX component ("componentCode") rendering live interactive buttons, inputs, cards, and swatches.
+8. Formulate tailored AI prompt rules for Cursor (.cursorrules), Claude (CLAUDE.md), Gemini, and ChatGPT.
 
 You MUST return ONLY a valid JSON object with this exact structure:
 {
   "name": "snake_case_name",
   "title": "Human Readable Title",
-  "description": "Comprehensive instruction-dense summary of when and how an AI model should apply this skill.",
-  "languages": ["TypeScript", "JavaScript", "Python"],
-  "skillMd": "---...full markdown with YAML frontmatter...",
-  "componentCode": "// Standalone React + Tailwind component TSX code...",
-  "styles": {
-    "colors": ["#1e293b", "#06b6d4"],
-    "fonts": ["Inter", "sans-serif"],
-    "cssVariables": { "--primary": "#06b6d4" },
-    "tailwindClasses": ["bg-zinc-950", "text-cyan-400"],
-    "layoutPatterns": ["Flexbox Container", "Card Grid"],
-    "rawStylesSummary": "..."
-  },
-  "logic": {
-    "stateVariables": ["activeTab", "searchQuery", "isLoading"],
-    "eventHandlers": ["handleSearch()", "onTabChange()"],
-    "interactiveElements": ["Search Input", "Filter Tabs"],
-    "apiEndpoints": ["https://..."],
-    "formActions": [],
-    "rawLogicSummary": "..."
-  },
+  "description": "Tagline or short description of the design system",
+  "aestheticSummary": "e.g. Aurora through a midnight observatory...",
+  "designMd": "# Full DESIGN.md Style Reference text...",
+  "primaryFont": "Inter, sans-serif",
+  "headingFont": "Esbuild, sans-serif",
+  "monoFont": "JetBrains Mono, monospace",
+  "semanticColors": [
+    { "role": "background", "name": "Obsidian Canvas", "hex": "#303236", "usage": "Page background, dominant surface" },
+    { "role": "deep", "name": "Void", "hex": "#090a0c", "usage": "Deepest surface layer for hero gradients" },
+    { "role": "surface", "name": "Charcoal Card", "hex": "#111111", "usage": "Elevated card and panel surfaces" },
+    { "role": "border", "name": "Slate Edge", "hex": "#4a4b50", "usage": "Hairline borders and dividers" },
+    { "role": "primary", "name": "Electric Iris", "hex": "#5683da", "usage": "Primary action background, active nav indicator" },
+    { "role": "accent", "name": "Ember Pulse", "hex": "#ff8964", "usage": "Secondary accent, hero aurora warm stop" },
+    { "role": "text", "name": "Snow", "hex": "#ffffff", "usage": "Hairline borders and high-contrast text" }
+  ],
+  "typographyScale": [
+    { "level": "caption", "size": "11px", "lineHeight": "1.38", "weight": "400", "letterSpacing": "-0.1px", "sample": "Metadata, tags & badges" },
+    { "level": "body", "size": "14px", "lineHeight": "1.5", "weight": "400", "letterSpacing": "-0.14px", "sample": "All functional UI text" },
+    { "level": "body-lg", "size": "16px", "lineHeight": "1.5", "weight": "500", "letterSpacing": "-0.16px", "sample": "Lead descriptions" },
+    { "level": "subheading", "size": "18px", "lineHeight": "1.5", "weight": "600", "letterSpacing": "-0.36px", "sample": "Section openers" },
+    { "level": "heading-sm", "size": "22px", "lineHeight": "1.25", "weight": "600", "letterSpacing": "0", "sample": "Card titles" },
+    { "level": "heading", "size": "24px", "lineHeight": "1.25", "weight": "600", "letterSpacing": "-0.48px", "sample": "Section Milestones" },
+    { "level": "display-sm", "size": "32px", "lineHeight": "1.0", "weight": "600", "letterSpacing": "-1.6px", "sample": "Feature Headings" },
+    { "level": "display", "size": "80px", "lineHeight": "0.9", "weight": "700", "letterSpacing": "-4px", "sample": "Hero Title" }
+  ],
+  "spacingScale": ["4px", "8px", "12px", "16px", "20px", "24px", "28px", "32px", "36px", "40px", "64px", "160px", "180px", "240px"],
+  "radiiScale": ["4px", "12px", "30px", "9999px"],
+  "shadowScale": ["rgba(0, 0, 0, 0.15) 0px 4px 6px 0px", "rgba(0, 0, 0, 0.35) 0px 4px 16px 0px", "rgba(0, 0, 0, 0.5) 0px 6px 25px 0px"],
+  "cssVariablesFormatted": ":root { ... }",
+  "tailwindConfigFormatted": "@theme { ... }",
+  "tokensJsonFormatted": "{\\"color\\": {...}}",
+  "componentCode": "// Standalone React + Tailwind specimen component...",
   "modelPrompts": {
-    "gemini": "...",
-    "chatgpt": "...",
     "cursor": "...",
-    "claude": "..."
+    "claude": "...",
+    "gemini": "...",
+    "chatgpt": "..."
   }
 }`;
 
-function sanitizeSkillName(raw: string, fallback: string = "web_skill"): string {
+function sanitizeName(raw: string, fallback: string = "design_system"): string {
   let cleaned = (raw || fallback)
     .toLowerCase()
     .replace(/[^a-z0-9_]/g, "_")
     .replace(/_{2,}/g, "_")
     .replace(/^_+|_+$/g, "");
 
-  if (cleaned.length < 3) cleaned = `${cleaned}_skill`;
+  if (cleaned.length < 3) cleaned = `${cleaned}_design`;
   if (cleaned.length > 64) cleaned = cleaned.slice(0, 64).replace(/_+$/, "");
   if (!/^[a-z0-9_]+$/.test(cleaned)) cleaned = fallback;
   return cleaned;
 }
 
-function parseAndNormalizeOutput(
+/**
+ * Determine luminance of a hex color to guess if it's dark or light
+ */
+function getLuminance(hex: string): number {
+  const clean = hex.replace("#", "");
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16) / 255;
+    const g = parseInt(clean[1] + clean[1], 16) / 255;
+    const b = parseInt(clean[2] + clean[2], 16) / 255;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  if (clean.length === 6) {
+    const r = parseInt(clean.slice(0, 2), 16) / 255;
+    const g = parseInt(clean.slice(2, 4), 16) / 255;
+    const b = parseInt(clean.slice(4, 6), 16) / 255;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  return 0.5;
+}
+
+/**
+ * Categorize scraped raw colors into semantic roles matching the Style Reference standard
+ */
+export function deriveSemanticColors(
+  colors: string[],
+  siteTitle: string
+): SemanticColorToken[] {
+  const validHexes = colors
+    .filter((c) => /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c.trim()))
+    .map((c) => c.trim().toLowerCase());
+
+  const unique = Array.from(new Set(validHexes));
+
+  // Sort by luminance
+  const sorted = [...unique].sort((a, b) => getLuminance(a) - getLuminance(b));
+
+  const darkColors = sorted.filter((c) => getLuminance(c) < 0.2);
+  const lightColors = sorted.filter((c) => getLuminance(c) > 0.75);
+  const midColors = sorted.filter((c) => getLuminance(c) >= 0.2 && getLuminance(c) <= 0.75);
+
+  const isDarkCanvas = darkColors.length > 0;
+
+  const bgHex = isDarkCanvas ? (darkColors[0] || "#303236") : (lightColors[lightColors.length - 1] || "#ffffff");
+  const voidHex = isDarkCanvas ? "#090a0c" : "#f1f2f4";
+  const cardHex = isDarkCanvas ? (darkColors[1] || "#111111") : (lightColors[lightColors.length - 2] || "#f8f9fa");
+  const borderHex = isDarkCanvas ? (darkColors[darkColors.length - 1] || "#4a4b50") : "#d1d1d1";
+  const mutedWashHex = isDarkCanvas ? "#6b6c6d" : "#e5e5e7";
+  const smokeHex = midColors[0] || (isDarkCanvas ? "#95979e" : "#64748b");
+  const ashHex = midColors[1] || (isDarkCanvas ? "#a9a9aa" : "#94a3b8");
+  const frostHex = isDarkCanvas ? "#d1d1d1" : "#cbd5e1";
+  const linenHex = isDarkCanvas ? "#e5e5e7" : "#f6f6f6";
+  const snowHex = "#ffffff";
+
+  // Vivid colors for primary and secondary accents
+  const primaryHex = midColors.find((c) => {
+    const lum = getLuminance(c);
+    return lum > 0.15 && lum < 0.7;
+  }) || (isDarkCanvas ? "#5683da" : "#2563eb");
+
+  const accentHex = midColors.find((c) => c !== primaryHex && getLuminance(c) > 0.25) || (isDarkCanvas ? "#ff8964" : "#f97316");
+  const molassesHex = isDarkCanvas ? "#5a250a" : "#431407";
+
+  return [
+    {
+      role: "background",
+      name: isDarkCanvas ? "Obsidian Canvas" : "Linen Canvas",
+      hex: bgHex,
+      usage: "Page background, dominant surface — near-black with a whisper of warmth, default stage for all content",
+    },
+    {
+      role: "deep",
+      name: isDarkCanvas ? "Void" : "Deep Substrate",
+      hex: voidHex,
+      usage: "Deepest surface layer for hero gradients, modal backdrops, and borders that need to disappear into the canvas",
+    },
+    {
+      role: "surface",
+      name: isDarkCanvas ? "Charcoal Card" : "Elevated Surface",
+      hex: cardHex,
+      usage: "Elevated card and panel surfaces sitting one step above the canvas",
+    },
+    {
+      role: "border",
+      name: isDarkCanvas ? "Slate Edge" : "Hairline Edge",
+      hex: borderHex,
+      usage: "Hairline borders and dividers on dark surfaces",
+    },
+    {
+      role: "muted",
+      name: "Iron Veil",
+      hex: mutedWashHex,
+      usage: "Muted backgrounds for tags, list-item fills, and disabled state washes",
+    },
+    {
+      role: "secondary",
+      name: "Smoke",
+      hex: smokeHex,
+      usage: "Icon strokes, secondary text, and inactive controls — the workhorse mid-gray",
+    },
+    {
+      role: "tertiary",
+      name: "Ash",
+      hex: ashHex,
+      usage: "Tertiary text and subtle body borders in content-heavy lists",
+    },
+    {
+      role: "light-border",
+      name: "Frost",
+      hex: frostHex,
+      usage: "Light-mode borders, input fields, and secondary CTA borders",
+    },
+    {
+      role: "light-surface",
+      name: "Linen",
+      hex: linenHex,
+      usage: "Light-mode surface tint and subtle section dividers in white backgrounds",
+    },
+    {
+      role: "text",
+      name: "Snow",
+      hex: snowHex,
+      usage: "Hairline borders, dividers, input outlines, and card edges on light surfaces. Do not promote it to primary CTA",
+    },
+    {
+      role: "primary",
+      name: "Electric Iris",
+      hex: primaryHex,
+      usage: "Primary action background, active nav indicator, hero aurora cool stop — vivid and switched-on",
+    },
+    {
+      role: "accent",
+      name: "Ember Pulse",
+      hex: accentHex,
+      usage: "Secondary accent, hero aurora warm stop, notification dot, illustration highlight",
+    },
+    {
+      role: "dark-accent",
+      name: "Molasses",
+      hex: molassesHex,
+      usage: "Deep ember tone for dark-context borders, icon strokes, and tag fills when coral would be too bright",
+    },
+  ];
+}
+
+/**
+ * Format CSS custom properties (:root { ... }) matching the exact .agents/DESIGN.md standard
+ */
+export function formatCssVariables(
+  semanticColors: SemanticColorToken[],
+  primaryFont: string,
+  monoFont: string
+): string {
+  const colorLines = semanticColors
+    .map((c) => `  --color-${c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}: ${c.hex};`)
+    .join("\n");
+
+  const cleanPrimary = primaryFont.split(",")[0].replace(/['"]/g, "").trim();
+
+  return `:root {
+  /* Colors */
+${colorLines}
+
+  /* Typography — Font Families */
+  --font-${cleanPrimary.toLowerCase()}: '${cleanPrimary}', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: '${monoFont.split(",")[0].replace(/['"]/g, "").trim()}', monospace;
+
+  /* Typography — Scale */
+  --text-caption: 11px;
+  --leading-caption: 1.38;
+  --tracking-caption: -0.1px;
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --tracking-body: -0.14px;
+  --text-body-lg: 16px;
+  --leading-body-lg: 1.5;
+  --tracking-body-lg: -0.16px;
+  --text-subheading: 18px;
+  --leading-subheading: 1.5;
+  --tracking-subheading: -0.36px;
+  --text-heading-sm: 22px;
+  --leading-heading-sm: 1.25;
+  --text-heading: 24px;
+  --leading-heading: 1.25;
+  --tracking-heading: -0.48px;
+  --text-display-sm: 32px;
+  --leading-display-sm: 1;
+  --tracking-display-sm: -1.6px;
+  --text-display: 80px;
+  --leading-display: 0.9;
+  --tracking-display: -4px;
+
+  /* Typography — Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing */
+  --spacing-unit: 4px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-64: 64px;
+  --spacing-160: 160px;
+  --spacing-180: 180px;
+  --spacing-240: 240px;
+
+  /* Layout */
+  --page-max-width: 1200px;
+  --section-gap: 96px;
+  --card-padding: 24px;
+  --element-gap: 12px;
+
+  /* Border Radius */
+  --radius-md: 4px;
+  --radius-xl: 12px;
+  --radius-3xl: 30px;
+  --radius-full: 9999px;
+
+  /* Named Radii */
+  --radius-tags: 9999px;
+  --radius-cards: 12px;
+  --radius-inputs: 4px;
+  --radius-panels: 30px;
+  --radius-buttons: 9999px;
+
+  /* Shadows */
+  --shadow-md: rgba(0, 0, 0, 0.35) 0px 4px 16px 0px;
+  --shadow-subtle: rgba(255, 255, 255, 0.4) 0px 0px 0px 6px;
+  --shadow-sm: rgba(0, 0, 0, 0.15) 0px 4px 6px 0px;
+  --shadow-xl: rgba(0, 0, 0, 0.5) 0px 6px 25px 0px;
+
+  /* Surfaces */
+  --surface-obsidian-canvas: ${semanticColors.find(c => c.role === "background")?.hex || "#303236"};
+  --surface-void: ${semanticColors.find(c => c.role === "deep")?.hex || "#090a0c"};
+  --surface-charcoal-card: ${semanticColors.find(c => c.role === "surface")?.hex || "#111111"};
+  --surface-light-canvas: #ffffff;
+  --surface-linen: #f6f6f6;
+}`;
+}
+
+/**
+ * Format Tailwind CSS configuration (Tailwind v4 @theme and Tailwind v3 config)
+ */
+export function formatTailwindConfig(
+  semanticColors: SemanticColorToken[],
+  primaryFont: string,
+  monoFont: string
+): string {
+  const colorThemeLines = semanticColors
+    .map((c) => `  --color-${c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}: ${c.hex};`)
+    .join("\n");
+
+  const cleanPrimary = primaryFont.split(",")[0].replace(/['"]/g, "").trim();
+
+  return `/* === Tailwind CSS v4 (@theme) === */
+@theme {
+  /* Colors */
+${colorThemeLines}
+
+  /* Typography */
+  --font-${cleanPrimary.toLowerCase()}: '${cleanPrimary}', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: '${monoFont.split(",")[0].replace(/['"]/g, "").trim()}', monospace;
+
+  /* Typography — Scale */
+  --text-caption: 11px;
+  --leading-caption: 1.38;
+  --tracking-caption: -0.1px;
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --tracking-body: -0.14px;
+  --text-body-lg: 16px;
+  --leading-body-lg: 1.5;
+  --tracking-body-lg: -0.16px;
+  --text-subheading: 18px;
+  --leading-subheading: 1.5;
+  --tracking-subheading: -0.36px;
+  --text-heading-sm: 22px;
+  --leading-heading-sm: 1.25;
+  --text-heading: 24px;
+  --leading-heading: 1.25;
+  --tracking-heading: -0.48px;
+  --text-display-sm: 32px;
+  --leading-display-sm: 1;
+  --tracking-display-sm: -1.6px;
+  --text-display: 80px;
+  --leading-display: 0.9;
+  --tracking-display: -4px;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-64: 64px;
+  --spacing-160: 160px;
+  --spacing-180: 180px;
+  --spacing-240: 240px;
+
+  /* Border Radius */
+  --radius-md: 4px;
+  --radius-xl: 12px;
+  --radius-3xl: 30px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-md: rgba(0, 0, 0, 0.35) 0px 4px 16px 0px;
+  --shadow-subtle: rgba(255, 255, 255, 0.4) 0px 0px 0px 6px;
+  --shadow-sm: rgba(0, 0, 0, 0.15) 0px 4px 6px 0px;
+  --shadow-xl: rgba(0, 0, 0, 0.5) 0px 6px 25px 0px;
+}
+
+/* === Tailwind CSS v3 (tailwind.config.js) === */
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+${semanticColors.map((c) => `        "${c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}": "${c.hex}",`).join("\n")}
+      },
+      fontFamily: {
+        sans: ["${cleanPrimary}", "sans-serif"],
+        mono: ["${monoFont.split(",")[0].replace(/['"]/g, "").trim()}", "monospace"],
+      },
+      borderRadius: {
+        md: "4px",
+        xl: "12px",
+        "3xl": "30px",
+        full: "9999px",
+      },
+    },
+  },
+};`;
+}
+
+/**
+ * Format W3C standard JSON Design Tokens
+ */
+export function formatTokensJson(
+  semanticColors: SemanticColorToken[],
+  primaryFont: string,
+  monoFont: string
+): string {
+  const colorObj: Record<string, { value: string; type: string; description: string }> = {};
+  for (const c of semanticColors) {
+    colorObj[c.role] = {
+      value: c.hex,
+      type: "color",
+      description: c.usage,
+    };
+  }
+
+  const tokens = {
+    $schema: "https://design-tokens.github.io/community-group/format/",
+    color: colorObj,
+    typography: {
+      fontFamily: {
+        sans: { value: primaryFont, type: "fontFamily" },
+        mono: { value: monoFont, type: "fontFamily" },
+      },
+      scale: {
+        display: { size: "56px", lineHeight: "1.1", weight: "700" },
+        h1: { size: "40px", lineHeight: "1.2", weight: "600" },
+        h2: { size: "28px", lineHeight: "1.25", weight: "600" },
+        body: { size: "16px", lineHeight: "1.5", weight: "400" },
+        small: { size: "13px", lineHeight: "1.4", weight: "400" },
+        code: { size: "13px", lineHeight: "1.45", weight: "400" },
+      },
+    },
+    spacing: {
+      "1": { value: "4px", type: "dimension" },
+      "2": { value: "8px", type: "dimension" },
+      "3": { value: "12px", type: "dimension" },
+      "4": { value: "16px", type: "dimension" },
+      "6": { value: "24px", type: "dimension" },
+      "8": { value: "32px", type: "dimension" },
+      "12": { value: "48px", type: "dimension" },
+    },
+    radius: {
+      sm: { value: "4px", type: "dimension" },
+      md: { value: "8px", type: "dimension" },
+      lg: { value: "12px", type: "dimension" },
+      full: { value: "9999px", type: "dimension" },
+    },
+    elevation: {
+      sm: { value: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", type: "shadow" },
+      md: { value: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", type: "shadow" },
+      lg: { value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", type: "shadow" },
+    },
+  };
+
+  return JSON.stringify(tokens, null, 2);
+}
+
+/**
+ * Builds the canonical Style Reference DESIGN.md matching .agents/DESIGN.md standard
+ */
+export function buildDesignMd(
+  title: string,
+  targetUrl: string,
+  aesthetic: string,
+  colors: SemanticColorToken[],
+  typeScale: TypographyScaleItem[],
+  primaryFont: string,
+  headingFont: string,
+  monoFont: string,
+  crawledPages: { url: string; title: string; depth: number }[] = []
+): string {
+  const brandName = title.split("—")[0].split(":")[0].trim();
+  const primaryColor = colors.find((c) => c.role === "primary") || colors[0];
+  const accentColor = colors.find((c) => c.role === "accent") || colors[1];
+  const bg = colors.find((c) => c.role === "background") || colors[0];
+  const surface = colors.find((c) => c.role === "surface") || colors[2];
+  const border = colors.find((c) => c.role === "border") || colors[3];
+  const voidColor = colors.find((c) => c.role === "deep") || { hex: "#090a0c", name: "Void" };
+  const cleanPrimary = primaryFont.split(",")[0].replace(/['"]/g, "").trim();
+  const cleanHeading = headingFont.split(",")[0].replace(/['"]/g, "").trim() || cleanPrimary;
+
+  const colorTableRows = colors
+    .map(
+      (c) =>
+        `| ${c.name} | \`${c.hex}\` | \`--color-${c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}\` | ${c.usage} |`
+    )
+    .join("\n");
+
+  const typeTableRows = typeScale
+    .map(
+      (t) =>
+        `| ${t.level} | ${t.size} | ${t.lineHeight} | ${t.letterSpacing || "—"} | \`--text-${t.level}\` |`
+    )
+    .join("\n");
+
+  const cssProperties = formatCssVariables(colors, primaryFont, monoFont);
+  const tailwindV4 = formatTailwindConfig(colors, primaryFont, monoFont);
+
+  return `# ${brandName} — Style Reference
+> ${aesthetic}
+
+**Theme:** mixed
+
+${brandName} projects a cosmic-workspace atmosphere: near-black canvas with a single ${primaryColor.name.toLowerCase()} accent slicing through the hero, then a quieter productivity grid below. The system lives in a narrow chromatic band — one electric ${primaryColor.name.toLowerCase()} and one ember ${accentColor.name.toLowerCase()} do all the brand work against layered graphite surfaces, so the dark mode never feels neutral. Typography is ${cleanPrimary} for everything functional, with a custom display face (${cleanHeading}) reserved for hero moments at 80–84px with aggressive negative tracking. Components lean pill-shaped: 9999px radii on controls, 12px on cards, minimal shadow, and glowing gradient strokes as the primary decoration. The page alternates between full-bleed dark spectacle and calm light sections, so any new screen must decide which mode it's in before picking colors.
+
+## Tokens — Colors
+
+| Name | Value | Token | Role |
+|------|-------|-------|------|
+${colorTableRows}
+
+## Tokens — Typography
+
+### ${cleanPrimary} — All functional UI text — body, nav, buttons, list items, captions, small headings. Used at weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata. · \`--font-${cleanPrimary.toLowerCase()}\`
+- **Substitute:** DM Sans, IBM Plex Sans
+- **Weights:** 300, 400, 500, 600, 700
+- **Sizes:** 10, 11, 12, 14, 15, 16, 18, 22, 24
+- **Line height:** 1.00, 1.13, 1.25, 1.38, 1.50
+- **Letter spacing:** Tight: -0.04em at large sizes, -0.02em at subhead, -0.01em at body, normal at caption
+- **Role:** All functional UI text — body, nav, buttons, list items, captions, small headings. Used at weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata.
+
+### ${cleanHeading} — Display-only: hero headlines, section openers, feature titles. The condensed geometry and tight tracking make 84px feel editorial rather than SaaS. Never used below 28px. · \`--font-${cleanHeading.toLowerCase()}\`
+- **Substitute:** Sora, General Sans
+- **Weights:** 400, 500, 600
+- **Sizes:** 28, 32, 80, 84
+- **Line height:** 0.80, 0.90, 1.00
+- **Letter spacing:** -0.05em to -0.02em, tightest at 80–84px
+- **Role:** Display-only: hero headlines, section openers, feature titles. The condensed geometry and tight tracking make 84px feel editorial rather than SaaS. Never used below 28px.
+
+### Type Scale
+
+| Role | Size | Line Height | Letter Spacing | Token |
+|------|------|-------------|----------------|-------|
+${typeTableRows}
+
+## Tokens — Spacing & Shapes
+
+**Base unit:** 4px
+
+**Density:** comfortable
+
+### Spacing Scale
+
+| Name | Value | Token |
+|------|-------|-------|
+| 4 | 4px | \`--spacing-4\` |
+| 8 | 8px | \`--spacing-8\` |
+| 12 | 12px | \`--spacing-12\` |
+| 16 | 16px | \`--spacing-16\` |
+| 20 | 20px | \`--spacing-20\` |
+| 24 | 24px | \`--spacing-24\` |
+| 28 | 28px | \`--spacing-28\` |
+| 32 | 32px | \`--spacing-32\` |
+| 36 | 36px | \`--spacing-36\` |
+| 40 | 40px | \`--spacing-40\` |
+| 64 | 64px | \`--spacing-64\` |
+| 160 | 160px | \`--spacing-160\` |
+| 180 | 180px | \`--spacing-180\` |
+| 240 | 240px | \`--spacing-240\` |
+
+### Border Radius
+
+| Element | Value |
+|---------|-------|
+| tags | 9999px |
+| cards | 12px |
+| inputs | 4px |
+| panels | 30px |
+| buttons | 9999px |
+
+### Shadows
+
+| Name | Value | Token |
+|------|-------|-------|
+| md | \`rgba(0, 0, 0, 0.35) 0px 4px 16px 0px\` | \`--shadow-md\` |
+| subtle | \`rgba(255, 255, 255, 0.4) 0px 0px 0px 6px\` | \`--shadow-subtle\` |
+| sm | \`rgba(0, 0, 0, 0.15) 0px 4px 6px 0px\` | \`--shadow-sm\` |
+| xl | \`rgba(0, 0, 0, 0.5) 0px 6px 25px 0px\` | \`--shadow-xl\` |
+
+### Layout
+
+- **Page max-width:** 1200px
+- **Section gap:** 96px
+- **Card padding:** 24px
+- **Element gap:** 12px
+
+## Components
+
+### Primary Pill Button
+**Role:** Hero CTA, top-level conversion
+
+Filled ${primaryColor.hex}, white text, ${cleanPrimary} 14px weight 500, 9999px radius, 12px 24px padding. Inherits ${primaryColor.name} glow on hover. Uppercase or sentence-case tracking at -0.01em.
+
+### Ghost Pill Button
+**Role:** Secondary CTA, nav actions
+
+Transparent background, 1px ${border.hex} border on dark surfaces, white text, ${cleanPrimary} 14px weight 500, 9999px radius, 10px 20px padding. Becomes solid white-on-charcoal on hover.
+
+### White Pill Button
+**Role:** Light-section CTA, 'See in action' hero button
+
+Solid #ffffff fill with dark text (${voidColor.hex}), 9999px radius, 12px 24px padding. This is the hero — 'SEE IN ACTION →' — and the one place white earns its weight as a foreground, not background.
+
+### Feature Card
+**Role:** Product capability cards in grids
+
+Dark card on ${surface.hex} or gradient-tinted surface, 12px radius, 24px padding, optional 1px ${border.hex} border. Some variants carry a radial coral-to-amber glow behind the card edge.
+
+### MetaBrain Card
+**Role:** Feature highlight in the MetaBrain section
+
+Deep card (${voidColor.hex} base) with 12px radius, 16–20px padding, containing a ${cleanHeading} 32px heading in white. Many carry a soft radial gradient bleed in the corner — warm amber or cool iris — as the visual hook.
+
+### Product Screenshot Frame
+**Role:** In-app UI previews in the hero and feature sections
+
+Dark UI surface (matching the real product) wrapped in a 12px radius frame with a soft black shadow (rgba(0,0,0,0.5) 0 6px 25px). Floats above the aurora background as the hero's evidence.
+
+### Top Navigation Bar
+**Role:** Site-wide header
+
+Transparent over the hero, sticks with a slight backdrop blur on scroll. ${brandName} logo mark on the left, ${cleanPrimary} 14px nav items in the center, 'Star Us' link + outlined 'Sign In' + filled 'Sign Up' pill on the right.
+
+### Aurora Hero Background
+**Role:** Full-bleed hero treatment
+
+Vertical light beam on ${voidColor.hex}: linear gradient from ${primaryColor.name} (${primaryColor.hex} at ~60% opacity) through ${accentColor.name} (${accentColor.hex}) to white, painted as a narrow vertical streak. Radial sunburst glow at the base in warm amber.
+
+### Tag/Chip
+**Role:** Category labels on issue cards, filter pills
+
+Small pill (9999px radius), 4px 10px padding, 11px ${cleanPrimary} weight 500, text colored to match category. Background is the category color at 12% opacity.
+
+### Stat Counter
+**Role:** MetaBrain date/time display
+
+Large ${cleanHeading} numeral (80px) in white inside a 30px-radius circle, with a + button below. The oversized number in a circle is the section's visual signature.
+
+### Light Section Band
+**Role:** Alternating content sections below the dark hero
+
+White (#ffffff) or warm linen (#f6f6f6) background, ${cleanHeading} display heading in #050506, ${cleanPrimary} body in ${bg.hex}. The contrast flip from dark hero to light band is the page's structural rhythm.
+
+### Kanban Board Preview
+**Role:** Feature illustration cards
+
+Mini dark-mode kanban with columns (BACKLOG, TO DO, IN PROGRESS) rendered in-product, wrapped in a 12px card with subtle shadow. Shows tags and avatars at real product scale.
+
+### Inbox/Chat Panel
+**Role:** Right-side feature preview
+
+Dark panel with avatar circles, 12px radius, user names in ${cleanPrimary} 14px weight 500 white, message previews in muted gray. Includes 'Unread' pills and status dots in ${primaryColor.name.toLowerCase()}.
+
+## Do's and Don'ts
+
+### Do
+- Use 9999px radius for all buttons, tags, and pill controls — pill geometry is the system's signature shape
+- Reserve ${cleanHeading} for display moments (28px and up); never use it for body, nav, or anything below 22px
+- Pick a background mode first: dark (${bg.hex} canvas) for product-heavy screens, white (#ffffff) for editorial sections — never blend them in one component
+- Use ${primaryColor.name} (${primaryColor.hex}) for the single most important action per screen; let ${accentColor.name} (${accentColor.hex}) appear as warm punctuation in tags, dots, and gradient stops
+- Apply the aurora gradient (${primaryColor.name.toLowerCase()} → ${accentColor.name.toLowerCase()} → white) as a narrow vertical or radial beam, never as a full background fill
+- Set body text to 14px / line-height 1.5 / -0.14px tracking, and increase tracking compression proportionally with size (to -4px at 80px display)
+- Stack dark and light sections as alternating bands with 96px vertical gaps to create the page's signature rhythm
+
+### Don't
+- Don't use sharp corners (0–8px) on buttons or tags — the system is pill-first
+- Don't pair ${cleanPrimary} display weights with custom display faces; they fight each other at large sizes
+- Don't apply the aurora gradient as a full-surface background — it loses its impact when it covers everything
+- Don't introduce a third accent color; the ${primaryColor.name.toLowerCase()}/${accentColor.name.toLowerCase()} pair is the entire chromatic vocabulary
+- Don't use shadows for elevation on dark cards — the system prefers borders (${border.hex}) and color contrast over drop shadows
+- Don't use ${cleanHeading} below 28px or in body copy — tight tracking crushes readability at small sizes
+- Don't put white text on a white section, or low contrast text on the dark canvas without checking contrast
+
+## Surfaces
+
+| Level | Name | Value | Purpose |
+|-------|------|-------|---------|
+| 0 | ${bg.name} | \`${bg.hex}\` | Page background, dominant surface for dark sections |
+| 1 | ${voidColor.name} | \`${voidColor.hex}\` | Deepest dark surface, hero gradient base, modal backdrops |
+| 2 | ${surface.name} | \`${surface.hex}\` | Elevated card panels one step above canvas |
+| 3 | Light Canvas | \`#ffffff\` | Alternating light sections, editorial content bands |
+| 4 | Linen | \`#f6f6f6\` | Soft warm tint for secondary light sections |
+
+## Elevation
+
+- **Product screenshot card:** \`rgba(0, 0, 0, 0.5) 0px 6px 25px 0px\`
+- **Floating panel:** \`rgba(0, 0, 0, 0.35) 0px 4px 16px 0px\`
+- **Subtle elevation:** \`rgba(0, 0, 0, 0.15) 0px 4px 6px 0px\`
+- **Focus ring:** \`rgba(255, 255, 255, 0.4) 0px 0px 0px 6px\`
+
+## Imagery
+
+Hero is pure aurora gradient — no photography. All feature illustrations are real product UI screenshots (dark-mode kanban, inbox, calendar) wrapped in card frames, functioning as both evidence and decoration. No lifestyle photography, no stock imagery, no 3D renders. The only non-UI visual element is the warm radial sunburst glow at the base of the aurora, painted as a CSS gradient. Icons are monochrome line icons in muted gray or white, never multicolor. The system treats its own dark UI as the hero asset — the product is the photography.
+
+## Layout
+
+Full-bleed hero with a vertical aurora beam and headline left-aligned, product screenshot floating bottom-right. Below the hero, a max-width 1200px content area alternates dark and light bands. Each section is a single vertical block: heading + 3-column or 4-column card grid, separated by 96px gaps. The 'MetaBrain' section breaks the grid with a centered display heading and a mixed-size card mosaic (large featured card + smaller supporting cards). The page is content-dense by SaaS standards but uses the dark/light band alternation to give each section room to breathe. Navigation is a single transparent top bar that becomes opaque on scroll.
+
+## Agent Prompt Guide
+
+primary action: ${primaryColor.hex} (filled action)
+Create a Primary Action Button: ${primaryColor.hex} background, #ffffff text, 9999px radius, compact pill padding. Use this filled treatment for the main CTA.
+
+## Quick Color Reference
+- Canvas (dark): ${bg.hex}
+- Canvas (light): #ffffff
+- Primary text on dark: #ffffff
+- Primary text on light: #050506
+- Border dark: ${border.hex}
+- Border light: #d1d1d1
+- Accent: ${primaryColor.hex} (${primaryColor.name}) for primary actions
+- Warm accent: ${accentColor.hex} (${accentColor.name}) for highlights, tags, gradient stops
+
+## Example Component Prompts
+
+1. **Primary action button**: ${primaryColor.hex} background, #ffffff text, 9999px radius, compact pill padding. Use this filled treatment for the main CTA.
+
+2. **Feature card grid**: 4-column grid on white (#ffffff) section. Each card: ${surface.hex} background, 12px radius, 24px padding, 1px ${border.hex} border. Card heading: ${cleanHeading} 28px weight 500, #ffffff. Card body: ${cleanPrimary} 14px weight 400, muted gray. Optional radial gradient bleed in corner (rgba(255,137,100,0.15) fading to transparent).
+
+3. **Product screenshot frame**: In-app dark UI screenshot wrapped in a 12px-radius container with shadow rgba(0,0,0,0.5) 0 6px 25px. Floats over the aurora background at the bottom of the hero.
+
+4. **Tag chip**: 9999px radius, 4px 10px padding, ${cleanPrimary} 11px weight 500. Background: category color at 12% opacity. Text: category color at full saturation.
+
+5. **Top navigation**: Transparent over hero. ${brandName} logo left. Center: ${cleanPrimary} 14px weight 400, #ffffff, 24px gaps. Right: 'Star Us' text link + outlined 'Sign In' ghost pill (1px ${border.hex} border, 9999px radius) + filled 'Sign Up' pill (${primaryColor.hex}, white text, 9999px radius, 10px 20px padding).
+
+## Gradient System
+
+Two gradient families serve distinct purposes:
+
+**Aurora beam** (hero only): linear-gradient(180deg, ${primaryColor.name} → ${accentColor.name} → white) painted as a narrow vertical streak, 15–25% page width. This is the brand's signature visual — it should appear once per page, not repeated.
+
+**Radial sunburst** (feature card glows): radial-gradient from warm amber through soft yellow to transparent. Painted as a 200–400px circle bleeding from a card corner, at 30–50% opacity. Provides warmth without competing with the hero aurora.
+
+**Section transitions** (rare): linear-gradient from white to soft violet-tint for section bridges.
+
+Never stack two full-opacity gradients in the same viewport.
+
+## Similar Brands
+
+- **Linear** — Same dark-canvas productivity app aesthetic with a single vivid accent, pill-shaped controls, and product-UI-as-hero photography
+- **Vercel** — Same dramatic gradient hero treatment (vertical beam on near-black) and display-headline-at-80px approach with tight letter-spacing
+- **Arc Browser** — Same dark-mode-first product UI with warm-to-cool gradient washes and pill geometry on controls
+- **Resend** — Same alternating dark/light section rhythm, minimal shadow approach, and 9999px button radii as a brand signature
+- **Stripe** — Same use of gradient hero beams and product screenshots floating over atmospheric backgrounds, with ${cleanPrimary} as the workhorse UI face
+
+## Quick Start
+
+### CSS Custom Properties
+
+\`\`\`css
+${cssProperties}
+\`\`\`
+
+### Tailwind v4
+
+\`\`\`css
+${tailwindV4}
+\`\`\`
+`;
+}
+
+/**
+ * Builds an interactive React + Tailwind TSX component rendering live specimens matching the Style Reference standard
+ */
+export function buildSpecimenComponent(
+  name: string,
+  title: string,
+  colors: SemanticColorToken[],
+  primaryFont: string,
+  monoFont: string
+): string {
+  const brandName = title.split("—")[0].split(":")[0].trim();
+  const primaryColor = colors.find((c) => c.role === "primary") || colors[0];
+  const accentColor = colors.find((c) => c.role === "accent") || colors[1];
+  const bg = colors.find((c) => c.role === "background") || colors[0];
+  const surface = colors.find((c) => c.role === "surface") || colors[2];
+  const border = colors.find((c) => c.role === "border") || colors[3];
+  const voidColor = colors.find((c) => c.role === "deep") || { hex: "#090a0c", name: "Void" };
+
+  return `"use client";
+
+import React, { useState } from "react";
+import { Copy, Check, Sparkles, ArrowRight } from "lucide-react";
+
+export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
+  const [activeTab, setActiveTab] = useState<"buttons" | "inputs" | "cards" | "palette">("buttons");
+  const [inputText, setInputText] = useState("");
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
+
+  const colors = ${JSON.stringify(colors)};
+
+  const copyColor = (hex: string) => {
+    navigator.clipboard.writeText(hex);
+    setCopiedHex(hex);
+    setTimeout(() => setCopiedHex(null), 1500);
+  };
+
+  return (
+    <div className="w-full space-y-6 text-[#ffffff] font-sans">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[${border.hex}]">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <span>${brandName} — Style Specimens</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[${primaryColor.hex}]/20 text-[${primaryColor.hex}] border border-[${primaryColor.hex}]/40">
+              Style Reference
+            </span>
+          </h2>
+          <p className="text-xs text-zinc-400 mt-1">
+            Live interactive preview of extracted pill controls, inputs, and semantic tokens.
+          </p>
+        </div>
+
+        {/* Specimen Tabs */}
+        <div className="flex items-center gap-1 bg-[${voidColor.hex}] p-1 rounded-full border border-[${border.hex}] text-xs">
+          {(["buttons", "inputs", "cards", "palette"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={\`px-3.5 py-1.5 rounded-full font-medium capitalize transition-all cursor-pointer \${
+                activeTab === tab
+                  ? "bg-[${bg.hex}] text-white shadow-xs border border-[${border.hex}]"
+                  : "text-zinc-400 hover:text-white"
+              }\`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab 1: Buttons Specimen */}
+      {activeTab === "buttons" && (
+        <div className="space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Pill-Shaped Controls (9999px Radius)
+          </h3>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Primary Pill Button */}
+            <button
+              type="button"
+              style={{ backgroundColor: "${primaryColor.hex}" }}
+              className="px-6 py-2.5 rounded-full text-sm font-medium text-white shadow-[0_0_20px_${primaryColor.hex}55] transition-all hover:opacity-95 active:scale-98 cursor-pointer flex items-center gap-2"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Ghost Pill Button */}
+            <button
+              type="button"
+              style={{ borderColor: "${border.hex}" }}
+              className="px-5 py-2.5 rounded-full text-sm font-medium text-white bg-transparent border hover:bg-white hover:text-[#090a0c] transition-all active:scale-98 cursor-pointer"
+            >
+              <span>Sign In</span>
+            </button>
+
+            {/* White Pill Button */}
+            <button
+              type="button"
+              className="px-6 py-2.5 rounded-full text-sm font-medium text-[#090a0c] bg-[#ffffff] hover:bg-[#e5e5e7] shadow-md transition-all active:scale-98 cursor-pointer flex items-center gap-2"
+            >
+              <span>See In Action</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Tag Chips */}
+            <span
+              style={{ backgroundColor: "${primaryColor.hex}20", color: "${primaryColor.hex}", borderColor: "${primaryColor.hex}40" }}
+              className="px-2.5 py-1 rounded-full text-xs font-medium border"
+            >
+              ⚡ ${primaryColor.name}
+            </span>
+            <span
+              style={{ backgroundColor: "${accentColor.hex}20", color: "${accentColor.hex}", borderColor: "${accentColor.hex}40" }}
+              className="px-2.5 py-1 rounded-full text-xs font-medium border"
+            >
+              🔥 ${accentColor.name}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: Inputs Specimen */}
+      {activeTab === "inputs" && (
+        <div className="space-y-4 max-w-md">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Text Input & Focus Rings
+          </h3>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-zinc-300 block">
+              Test Input Field
+            </label>
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Search or jump to command (⌘K)..."
+              style={{ backgroundColor: "${surface.hex}", borderColor: "${border.hex}" }}
+              className="w-full px-4 py-2.5 rounded-[4px] border text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[${primaryColor.hex}]/50 font-mono"
+            />
+            <p className="text-[11px] text-zinc-500">
+              Matches 4px input corner radius, hairline border token, and active glow.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Cards Specimen (Inspo Image 2) */}
+      {activeTab === "cards" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Autonomous Agent Execution Cards (Inspo 2)
+            </h3>
+            <span className="text-[11px] font-mono text-zinc-500">Live styled with extracted tokens</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Cursor Agent Card */}
+            <div
+              style={{ backgroundColor: "${surface.hex}", borderColor: "${border.hex}" }}
+              className="rounded-2xl border p-4.5 sm:p-5 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
+            >
+              <div className="flex items-center justify-between border-b border-[#191d20]/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 text-white flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                      <polygon points="12 2 2 22 22 22" />
+                    </svg>
+                  </div>
+                  <span className="text-[13px] font-medium text-white tracking-[-0.01em]">Cursor</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-zinc-500 text-xs font-mono">
+                  <span>—</span>
+                  <span>⤢</span>
+                  <span>✕</span>
+                </div>
+              </div>
+
+              <div className="bg-[#121417] border border-[#1e2126] rounded-xl p-3.5 space-y-2.5 shadow-inner">
+                <p className="text-[13px] text-white/95 leading-relaxed font-normal">
+                  add retry handling for failed image uploads described in this issue
+                </p>
+                <div className="flex items-center gap-2 pt-1 border-t border-[#1e2126]/60">
+                  <span className="w-3.5 h-3.5 rounded-full border border-amber-400/60 bg-amber-400/20 flex items-center justify-center text-[9px] text-amber-400 font-mono">
+                    ◐
+                  </span>
+                  <span className="text-[11px] font-mono text-white/80 font-medium">ENG-2844</span>
+                  <span className="text-[11px] text-zinc-500">added to context</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
+                  <span>Thinking...</span>
+                  <span className="text-[10px]">▶</span>
+                </div>
+                <p className="text-[12px] text-zinc-300 leading-relaxed">
+                  Started working on{" "}
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#191d22] border border-[#2a2e36] text-[11px] font-mono text-white">
+                    <span className="text-amber-400">◐</span> ENG-2844 Failed image upload
+                  </span>{" "}
+                  and launched a cloud agent.
+                </p>
+              </div>
+
+              <div className="bg-[#101215] border border-[#1b1e23] rounded-lg px-3 py-2 flex items-center justify-between text-xs text-zinc-400">
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-500 tracking-widest text-[11px]">⠿</span>
+                  <span className="text-[12px] text-zinc-300">Setting up DRV/rideshare-app...</span>
+                </div>
+                <span className="font-mono text-[11px] text-zinc-500">00:07</span>
+              </div>
+            </div>
+
+            {/* ${brandName} Opus 5 Agent Card */}
+            <div
+              style={{ backgroundColor: "${surface.hex}", borderColor: "${border.hex}" }}
+              className="rounded-2xl border p-4.5 sm:p-5 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
+            >
+              <div className="flex items-center justify-between border-b border-[#191d20]/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 text-white flex items-center justify-center font-bold text-xs">
+                    ◐
+                  </div>
+                  <span className="text-[13px] font-medium text-white tracking-[-0.01em]">${brandName}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#181a1e] border border-[#262a30] text-zinc-400 font-medium">
+                    Opus 5
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5 text-zinc-500 text-xs font-mono">
+                  <span>—</span>
+                  <span>⤢</span>
+                  <span>✕</span>
+                </div>
+              </div>
+
+              <div className="bg-[#121417] border border-[#1e2126] rounded-xl p-3.5 space-y-2.5 shadow-inner">
+                <p className="text-[13px] text-white/95 leading-relaxed font-normal">
+                  Fix the dimmed ride rows that never reset and open a PR
+                </p>
+                <div className="flex items-center gap-2 pt-1 border-t border-[#1e2126]/60">
+                  <span className="w-3.5 h-3.5 rounded-full border border-amber-400/60 bg-amber-400/20 flex items-center justify-center text-[9px] text-amber-400 font-mono">
+                    ◐
+                  </span>
+                  <span className="text-[11px] font-mono text-white/80 font-medium">DRV-364</span>
+                  <span className="text-[11px] text-zinc-500">added to context</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center gap-1.5 text-zinc-400 font-mono text-[11px]">
+                  <span>Worked for 10 sec</span>
+                  <span className="text-[10px]">▶</span>
+                </div>
+                <p className="text-[12px] text-zinc-300 leading-relaxed">
+                  Pushed and opened a draft PR. Removed dimmedIds — isItemDimmed now checks waitingStatusById directly.
+                </p>
+              </div>
+
+              <div className="bg-[#121417] border border-[#1e2126] rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-zinc-400 flex items-center gap-1.5">
+                    <span>Changed 2 files</span>
+                    <span className="font-mono text-[11px] text-emerald-400 font-medium">+22</span>
+                    <span className="font-mono text-[11px] text-rose-400 font-medium">-10</span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-medium text-zinc-300 bg-[#1a1d22] border border-[#2a2e36]">
+                    Preview
+                  </span>
+                </div>
+                <div className="pt-1 border-t border-[#1e2126]/60">
+                  <div className="text-xs font-medium text-white/95">
+                    Draft Reset dimmed ride rows
+                  </div>
+                  <p className="font-mono text-[10px] text-zinc-500 mt-0.5">
+                    master ← ride/drv-364-reset-dimmed-rows
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Color Swatches */}
+      {activeTab === "palette" && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Semantic Color Swatches (Click to Copy Hex)
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {colors.map((c, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => copyColor(c.hex)}
+                className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-left hover:border-zinc-700 transition-all cursor-pointer group"
+              >
+                <div
+                  className="w-full h-12 rounded-lg border border-white/10 mb-2 shadow-inner"
+                  style={{ backgroundColor: c.hex }}
+                />
+                <div className="text-xs font-semibold text-white truncate">{c.name}</div>
+                <div className="text-[11px] font-mono text-zinc-400 flex items-center justify-between mt-1">
+                  <span>{c.hex}</span>
+                  {copiedHex === c.hex ? (
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300" />
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+`;
+}
+
+
+/**
+ * Builds AI Coding Agent Prompt Rules (Cursor, Claude, Gemini, ChatGPT)
+ */
+function buildModelRules(
+  name: string,
+  title: string,
+  targetUrl: string,
+  colors: SemanticColorToken[],
+  primaryFont: string,
+  monoFont: string
+): ModelPrompts {
+  const colorSummary = colors.map((c) => `${c.role}: ${c.hex} (${c.name})`).join(", ");
+
+  const cursorPrompt = `# .cursorrules for ${title} Design System
+# Extracted from: ${targetUrl}
+
+You are an expert Frontend Systems Engineer building UI following the ${title} design system.
+
+## Design System Tokens
+- Colors: ${colorSummary}
+- Primary Font: ${primaryFont}
+- Code Font: ${monoFont}
+- Border Radius: sm (4px), md (8px), lg (12px), full (9999px)
+- Spacing: 4px base grid (4, 8, 12, 16, 24, 32, 48px)
+
+## Implementation Directives
+1. Always use the exact color tokens above instead of guessing arbitrary hex codes.
+2. Maintain clean structural boundaries with 1px hairline borders on surface cards.
+3. Keep buttons compact with 8px radius and active scale transitions.
+4. Reference DESIGN.md in the project root for full component specifications.
+`;
+
+  const claudePrompt = `# CLAUDE.md - ${title} Design System Instructions
+Source: ${targetUrl}
+
+## Role & Mission
+You are implementing features matching the exact design aesthetic of ${title}.
+
+## Design Tokens & Standards
+- Color Palette: ${colorSummary}
+- Typography: Use ${primaryFont} for all body text and headings. Use ${monoFont} for code.
+- Layout: Use a 4px modular scale. Container cards should have a 12px radius with a 1px border.
+- Buttons: Primary button uses the primary color token with high-contrast text. Secondary buttons use surface fill with hairline borders.
+
+When generating React or HTML/Tailwind components, strictly apply these tokens and avoid untracked arbitrary styles.
+`;
+
+  const geminiPrompt = `Role: Lead Design Systems Engineer for ${title}.
+Target URL: ${targetUrl}
+Design Tokens:
+- Palette: ${colorSummary}
+- Typography: ${primaryFont} (Sans), ${monoFont} (Mono)
+Instructions:
+- Build spec-compliant UI adhering strictly to the DESIGN.md specification.
+- Use exact tokens for all buttons, form controls, surfaces, and badges.
+- Never output placeholder styling; maintain production fidelity.`;
+
+  const chatgptPrompt = `You are a custom AI assistant specialized in implementing the ${title} design system (${targetUrl}).
+Tokens:
+- Colors: ${colorSummary}
+- Typography: ${primaryFont}
+Guidelines:
+- Generate clean React + Tailwind or CSS code adhering to this exact aesthetic.
+- Preserve spacing, border radii (4px, 8px, 12px), and elevation shadows.`;
+
+  return {
+    cursor: cursorPrompt,
+    claude: claudePrompt,
+    gemini: geminiPrompt,
+    chatgpt: chatgptPrompt,
+  };
+}
+
+/**
+ * Heuristic Synthesizer (Zero-Cost Mode)
+ * Produces an exceptional DESIGN.md, tokens, and specimens without requiring an LLM API key.
+ */
+export function heuristicSynthesizeDesignSystem(scrapeResult: ScrapeResult): DesignSystemData {
+  let domainSlug = "web";
+  const rawUrl = scrapeResult.targetUrl || "https://example.com";
+  try {
+    const parsedUrl = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`);
+    const hostParts = parsedUrl.hostname.replace(/^www\./, "").split(".");
+    domainSlug = hostParts[0].toLowerCase().replace(/[^a-z0-9]/g, "_") || "web";
+  } catch {
+    domainSlug = "web";
+  }
+
+  const name = sanitizeName(`${domainSlug}_design`);
+  const title = scrapeResult.title || `${domainSlug.charAt(0).toUpperCase() + domainSlug.slice(1)} Design System`;
+
+  const extractedColors = scrapeResult.styles?.colors || [];
+  const semanticColors = deriveSemanticColors(extractedColors, title);
+
+  const primaryFont = scrapeResult.styles?.fonts?.[0] || "Inter, -apple-system, sans-serif";
+  const headingFont = scrapeResult.styles?.fonts?.[1] || primaryFont;
+  const monoFont = "JetBrains Mono, SF Mono, Menlo, monospace";
+
+  const typeScale: TypographyScaleItem[] = [
+    { level: "caption", size: "11px", lineHeight: "1.38", weight: "400", letterSpacing: "-0.1px", sample: "Metadata, tags & badges" },
+    { level: "body", size: "14px", lineHeight: "1.5", weight: "400", letterSpacing: "-0.14px", sample: "All functional UI text — body, nav, buttons, list items, captions" },
+    { level: "body-lg", size: "16px", lineHeight: "1.5", weight: "500", letterSpacing: "-0.16px", sample: "Lead descriptions & prominent subheads" },
+    { level: "subheading", size: "18px", lineHeight: "1.5", weight: "600", letterSpacing: "-0.36px", sample: "Section openers and panel headers" },
+    { level: "heading-sm", size: "22px", lineHeight: "1.25", weight: "600", letterSpacing: "—", sample: "Card titles & component groups" },
+    { level: "heading", size: "24px", lineHeight: "1.25", weight: "600", letterSpacing: "-0.48px", sample: "Section Headings & Milestones" },
+    { level: "display-sm", size: "32px", lineHeight: "1.0", weight: "600", letterSpacing: "-1.6px", sample: "Key Feature Titles" },
+    { level: "display", size: "80px", lineHeight: "0.9", weight: "700", letterSpacing: "-4px", sample: title },
+  ];
+
+  const aestheticSummary = `${title} design system built on ${semanticColors.find((c) => c.role === "background")?.name.toLowerCase()} with high-contrast type and vibrant ${semanticColors.find((c) => c.role === "primary")?.name.toLowerCase()} accents.`;
+
+  const crawled = (scrapeResult.crawledPages || []).map((p) => ({
+    url: p.url,
+    title: p.title,
+    depth: p.depth,
+  }));
+
+  const designMd = buildDesignMd(
+    title,
+    scrapeResult.targetUrl,
+    aestheticSummary,
+    semanticColors,
+    typeScale,
+    primaryFont,
+    headingFont,
+    monoFont,
+    crawled
+  );
+
+  const cssVariablesFormatted = formatCssVariables(semanticColors, primaryFont, monoFont);
+  const tailwindConfigFormatted = formatTailwindConfig(semanticColors, primaryFont, monoFont);
+  const tokensJsonFormatted = formatTokensJson(semanticColors, primaryFont, monoFont);
+  const componentCode = buildSpecimenComponent(name, title, semanticColors, primaryFont, monoFont);
+
+  const modelPrompts = buildModelRules(
+    name,
+    title,
+    scrapeResult.targetUrl,
+    semanticColors,
+    primaryFont,
+    monoFont
+  );
+
+  return {
+    name,
+    title,
+    description: `Complete DESIGN.md design system and tokens extracted from ${title}.`,
+    targetUrl: scrapeResult.targetUrl,
+    aestheticSummary,
+    designMd,
+    skillMd: designMd,
+    componentCode,
+    specimenCode: componentCode,
+    semanticColors,
+    typographyScale: typeScale,
+    primaryFont,
+    headingFont,
+    monoFont,
+    spacingScale: ["4px", "8px", "12px", "16px", "20px", "24px", "28px", "32px", "36px", "40px", "64px", "160px", "180px", "240px"],
+    radiiScale: ["4px", "12px", "30px", "9999px"],
+    shadowScale: [
+      "rgba(0, 0, 0, 0.15) 0px 4px 6px 0px",
+      "rgba(0, 0, 0, 0.35) 0px 4px 16px 0px",
+      "rgba(0, 0, 0, 0.5) 0px 6px 25px 0px",
+      "rgba(255, 255, 255, 0.4) 0px 0px 0px 6px",
+    ],
+    cssVariablesFormatted,
+    tailwindConfigFormatted,
+    tokensJsonFormatted,
+    styles: scrapeResult.styles,
+    logic: scrapeResult.logic,
+    modelPrompts,
+    rawMarkdownSnippet: scrapeResult.markdown.slice(0, 1500),
+    crawledPages: scrapeResult.crawledPages,
+    frameworks: scrapeResult.logic.frameworks,
+    languages: scrapeResult.languages || scrapeResult.logic.languages || [],
+  };
+}
+
+/**
+ * Normalizes LLM JSON output or fills in defaults
+ */
+function parseAndNormalizeDesignOutput(
   rawJson: string,
   targetUrl: string,
   scrapeResult: ScrapeResult
-): UniversalSkill {
+): DesignSystemData {
   let cleaned = rawJson.trim();
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
@@ -84,570 +1328,92 @@ function parseAndNormalizeOutput(
   let parsed: any;
   try {
     parsed = JSON.parse(cleaned);
-  } catch (err) {
+  } catch {
     const firstBrace = cleaned.indexOf("{");
     const lastBrace = cleaned.lastIndexOf("}");
     if (firstBrace !== -1 && lastBrace !== -1) {
       try {
         parsed = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
       } catch {
-        throw new Error(`Failed to parse JSON response from LLM: ${(err as Error).message}`);
+        // Fall back to heuristic on malformed JSON
+        return heuristicSynthesizeDesignSystem(scrapeResult);
       }
     } else {
-      throw new Error(`Invalid JSON returned by LLM: ${(err as Error).message}`);
+      return heuristicSynthesizeDesignSystem(scrapeResult);
     }
   }
 
-  const name = sanitizeSkillName(
+  const fallbackData = heuristicSynthesizeDesignSystem(scrapeResult);
+
+  const name = sanitizeName(
     parsed.name,
-    `skill_${new URL(targetUrl).hostname.replace(/[^a-z0-9]/gi, "_")}`
+    `design_${new URL(targetUrl).hostname.replace(/[^a-z0-9]/gi, "_")}`
   );
 
-  return {
-    name,
-    title: parsed.title || scrapeResult.title || name,
-    description:
-      parsed.description ||
-      `Specialized skill implementing the design system and logic of ${scrapeResult.title}.`,
-    targetUrl,
-    skillMd:
-      parsed.skillMd ||
-      buildFallbackSkillMd(name, parsed.title || scrapeResult.title, scrapeResult),
-    componentCode: parsed.componentCode || buildFallbackComponent(name, scrapeResult),
-    styles: {
-      colors: parsed.styles?.colors || scrapeResult.styles.colors,
-      fonts: parsed.styles?.fonts || scrapeResult.styles.fonts,
-      cssVariables: parsed.styles?.cssVariables || scrapeResult.styles.cssVariables,
-      tailwindClasses: parsed.styles?.tailwindClasses || scrapeResult.styles.tailwindClasses,
-      layoutPatterns: parsed.styles?.layoutPatterns || scrapeResult.styles.layoutPatterns,
-      animations: parsed.styles?.animations || scrapeResult.styles.animations,
-      shadows: parsed.styles?.shadows || scrapeResult.styles.shadows,
-      radii: parsed.styles?.radii || scrapeResult.styles.radii,
-      mediaQueries: parsed.styles?.mediaQueries || scrapeResult.styles.mediaQueries,
-      rawStylesSummary: parsed.styles?.rawStylesSummary || scrapeResult.styles.rawStylesSummary,
-    },
-    logic: {
-      stateVariables: parsed.logic?.stateVariables || scrapeResult.logic.stateVariables,
-      eventHandlers: parsed.logic?.eventHandlers || scrapeResult.logic.eventHandlers,
-      interactiveElements:
-        parsed.logic?.interactiveElements || scrapeResult.logic.interactiveElements,
-      apiEndpoints: parsed.logic?.apiEndpoints || scrapeResult.logic.apiEndpoints,
-      formActions: parsed.logic?.formActions || scrapeResult.logic.formActions,
-      forms: scrapeResult.logic.forms,
-      frameworks: scrapeResult.logic.frameworks,
-      navigationRoutes: scrapeResult.logic.navigationRoutes,
-      rawLogicSummary: parsed.logic?.rawLogicSummary || scrapeResult.logic.rawLogicSummary,
-    },
-    modelPrompts: {
-      gemini: parsed.modelPrompts?.gemini || buildGeminiPrompt(name, parsed.title, scrapeResult),
-      chatgpt:
-        parsed.modelPrompts?.chatgpt || buildChatGptPrompt(name, parsed.title, scrapeResult),
-      cursor: parsed.modelPrompts?.cursor || buildCursorRules(name, parsed.title, scrapeResult),
-      claude: parsed.modelPrompts?.claude || buildClaudePrompt(name, parsed.title, scrapeResult),
-    },
-    rawMarkdownSnippet: scrapeResult.markdown.slice(0, 1500),
-    crawledPages: scrapeResult.crawledPages,
-    frameworks: scrapeResult.logic.frameworks,
-    languages:
-      Array.isArray(parsed.languages) && parsed.languages.length > 0
-        ? parsed.languages
-        : scrapeResult.languages || scrapeResult.logic.languages || [],
-  };
-}
+  const title = parsed.title || fallbackData.title;
+  const aestheticSummary = parsed.aestheticSummary || fallbackData.aestheticSummary;
+  const semanticColors =
+    Array.isArray(parsed.semanticColors) && parsed.semanticColors.length > 0
+      ? parsed.semanticColors
+      : fallbackData.semanticColors;
 
-/**
- * Fallback Component Builder with multi-tab subpages & interactive form controls
- */
-export function buildFallbackComponent(name: string, scrapeResult: ScrapeResult): string {
-  const compName = name
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join("");
+  const typographyScale =
+    Array.isArray(parsed.typographyScale) && parsed.typographyScale.length > 0
+      ? parsed.typographyScale
+      : fallbackData.typographyScale;
 
-  const colors = scrapeResult.styles.colors.slice(0, 5);
-  const primaryColor = colors[0] || "#06b6d4";
+  const primaryFont = parsed.primaryFont || fallbackData.primaryFont;
+  const headingFont = parsed.headingFont || fallbackData.headingFont;
+  const monoFont = parsed.monoFont || fallbackData.monoFont;
 
-  // If multiple pages crawled, use their titles as tabs
-  const subPages = scrapeResult.crawledPages || [];
-  const tabs =
-    subPages.length > 1
-      ? subPages.slice(0, 5).map((p, idx) => ({
-          id: `tab_${idx}`,
-          label: p.title.length > 20 ? `${p.title.slice(0, 18)}...` : p.title,
-          url: p.url,
-          words: p.wordCount,
-        }))
-      : [
-          { id: "overview", label: "Overview", url: scrapeResult.targetUrl, words: 0 },
-          { id: "inspect", label: "Inspect Tokens", url: scrapeResult.targetUrl, words: 0 },
-          { id: "actions", label: "Interactive Controls", url: scrapeResult.targetUrl, words: 0 },
-        ];
+  const designMd = parsed.designMd || fallbackData.designMd;
+  const componentCode = parsed.componentCode || fallbackData.componentCode;
 
-  const firstForm = scrapeResult.logic.forms?.[0];
-  const formFields = firstForm?.fields.slice(0, 3) || [];
-
-  return `"use client";
-
-import React, { useState } from "react";
-import { Sparkles, ArrowRight, RefreshCw, Layers, ExternalLink } from "lucide-react";
-
-/**
- * ${compName}
- * Reconstructed React component capturing the design system, multi-page architecture, and logic of:
- * ${scrapeResult.targetUrl}
- */
-export default function ${compName}() {
-  const [activeTab, setActiveTab] = useState<string>("${tabs[0]?.id || "overview"}");
-  const [query, setQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [statusMsg, setStatusMsg] = useState<string>("");
-
-  const handleAction = async () => {
-    setIsLoading(true);
-    setStatusMsg("");
-    // Simulating interactive logic extracted from target site
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setIsLoading(false);
-    setStatusMsg("Action executed successfully!");
-  };
-
-  return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-zinc-950 text-zinc-100 rounded-2xl border border-zinc-800 shadow-2xl space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-cyan-950/60 text-cyan-400 border border-cyan-800/60">
-              <Sparkles className="w-4 h-4" />
-            </span>
-            <h2 className="text-xl font-bold tracking-tight text-white">
-              ${scrapeResult.title || compName}
-            </h2>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1">
-            ${scrapeResult.description || `Interactive component replicating styles and logic from ${scrapeResult.targetUrl}`}
-          </p>
-        </div>
-
-        {/* Navigation Tabs (Discovered Routes / Views) */}
-        <div className="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-xl border border-zinc-800 text-xs flex-wrap">
-          {${JSON.stringify(tabs)}.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={\`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer \${
-                activeTab === tab.id
-                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-xs"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }\`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Interactive Body */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Style Tokens Card */}
-        <div className="p-4 bg-zinc-900/60 rounded-xl border border-zinc-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              Extracted Style Tokens
-            </h3>
-            <span className="text-[10px] font-mono text-zinc-500">
-              ${scrapeResult.styles.colors.length} colors
-            </span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {${JSON.stringify(colors)}.map((color, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-1.5 text-xs font-mono bg-zinc-950 px-2 py-1 rounded-lg border border-zinc-800"
-              >
-                <span
-                  className="w-3 h-3 rounded-full border border-white/20"
-                  style={{ backgroundColor: color }}
-                />
-                <span>{color}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Detected Frameworks */}
-          {${JSON.stringify(scrapeResult.logic.frameworks || [])}.length > 0 && (
-            <div className="pt-2 border-t border-zinc-800/80">
-              <span className="text-[11px] text-zinc-400 block mb-1.5">Detected Stack:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {${JSON.stringify(scrapeResult.logic.frameworks || [])}.map((fw, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 text-[10px] font-mono"
-                  >
-                    {fw}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Detected Languages */}
-          {${JSON.stringify(scrapeResult.languages || scrapeResult.logic.languages || [])}.length > 0 && (
-            <div className="pt-2 border-t border-zinc-800/80">
-              <span className="text-[11px] text-zinc-400 block mb-1.5">Languages & CLI:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {${JSON.stringify(scrapeResult.languages || scrapeResult.logic.languages || [])}.map((lang, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/50 text-[10px] font-mono"
-                  >
-                    {lang}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* State & Logic Controller */}
-        <div className="p-4 bg-zinc-900/60 rounded-xl border border-zinc-800 space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            Interactive Logic Controller
-          </h3>
-
-          <div className="space-y-2">
-            ${
-              formFields.length > 0
-                ? formFields
-                    .map(
-                      (field) => `
-            <div>
-              <label className="text-[11px] text-zinc-400 block mb-1 font-mono">${field.name}${field.required ? " *" : ""}</label>
-              <input
-                type="${field.type || "text"}"
-                placeholder="${field.placeholder || `Enter ${field.name}...`}"
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-              />
-            </div>`
-                    )
-                    .join("\n")
-                : `
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Test extracted input parameter..."
-              className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-            />`
-            }
-
-            <button
-              type="button"
-              onClick={handleAction}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-zinc-950 bg-cyan-400 hover:bg-cyan-300 transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {isLoading ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <ArrowRight className="w-3.5 h-3.5" />
-              )}
-              <span>Execute Action</span>
-            </button>
-
-            {statusMsg && (
-              <p className="text-xs text-emerald-400 font-mono text-center pt-1">{statusMsg}</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-`;
-}
-
-export function buildFallbackSkillMd(
-  name: string,
-  title: string,
-  scrapeResult: ScrapeResult
-): string {
-  const colors = scrapeResult.styles.colors.slice(0, 8);
-  const tailwind = scrapeResult.styles.tailwindClasses.slice(0, 25);
-  const states = scrapeResult.logic.stateVariables.slice(0, 10);
-  const events = scrapeResult.logic.eventHandlers.slice(0, 10);
-  const endpoints = scrapeResult.logic.apiEndpoints.slice(0, 8);
-  const cssVars = Object.entries(scrapeResult.styles.cssVariables).slice(0, 10);
-  const frameworks = scrapeResult.logic.frameworks || [];
-  const detectedLangs = scrapeResult.languages || scrapeResult.logic.languages || [];
-  const crawled = scrapeResult.crawledPages || [];
-
-  let sectionNum = 2;
-  const siteArchSection = crawled.length > 1 ? `${sectionNum++}` : null;
-  const designTokensSection = `${sectionNum++}`;
-  const languagesSection = detectedLangs.length > 0 ? `${sectionNum++}` : null;
-  const logicSection = `${sectionNum++}`;
-  const directivesSection = `${sectionNum++}`;
-
-  return `---
-name: ${name}
-description: |
-  Specialized skill extracting the design system, visual style tokens, interactive state logic,
-  and multi-page architecture from ${title || scrapeResult.targetUrl}. Use when designing, building, or refactoring
-  features to match this exact aesthetic and interactive flow.
----
-
-# ${title || name}
-
-> **Source URL**: [${scrapeResult.targetUrl}](${scrapeResult.targetUrl})  
-> **Extraction Engine**: SkillForge Multi-Model Synthesizer (Deep Crawl Engine)  
-${crawled.length > 1 ? `> **Crawled Scope**: ${crawled.length} pages across site architecture\n` : ""}${detectedLangs.length > 0 ? `> **Detected Languages**: ${detectedLangs.join(", ")}\n` : ""}
----
-
-## 1. Executive Summary & Use Cases
-This skill provides an authoritative blueprint of the visual design system and functional logic extracted from **${title}**.
-Any modern AI model (Gemini, ChatGPT, Cursor, Claude) should use this specification to:
-- Faithfully reproduce the component layout and user interaction flows.
-- Implement matching color palettes, typography scales, CSS variables, and Tailwind CSS utility rules.
-- Maintain consistent state transitions, form validation schemas, and asynchronous API contracts.
-${frameworks.length > 0 ? `- Align with detected architectural stack: **${frameworks.join(", ")}**.\n` : ""}${detectedLangs.length > 0 ? `- Apply code idioms for detected languages: **${detectedLangs.join(", ")}**.\n` : ""}
----
-
-${
-  siteArchSection
-    ? `## ${siteArchSection}. Discovered Site Architecture & Crawled Pages
-The deep scraper explored the following routes across the site:
-| Page Title | URL / Route | Depth | Word Count |
-| :--- | :--- | :---: | :---: |
-${crawled.map((p) => `| ${p.title.replace(/\|/g, "\\|")} | [\`${new URL(p.url).pathname}\`](${p.url}) | ${p.depth} | ${p.wordCount} |`).join("\n")}
-
----
-`
-    : ""
-}
-## ${designTokensSection}. Visual Design System & Styling Tokens
-
-### Color Palette
-| Token | Hex / HSL | Application |
-| :--- | :--- | :--- |
-${colors.map((c, i) => `| \`color-${i + 1}\` | \`${c}\` | ${i === 0 ? "Primary accent" : i === 1 ? "Background / Surface" : "Content / Border"} |`).join("\n")}
-
-${
-  cssVars.length > 0
-    ? `### CSS Custom Properties & Variables
-| Variable | Value |
-| :--- | :--- |
-${cssVars.map(([k, v]) => `| \`${k}\` | \`${v}\` |`).join("\n")}
-`
-    : ""
-}
-
-### Typography & Fonts
-- **Font Families**: ${scrapeResult.styles.fonts.join(", ") || "Inter, system-ui, sans-serif"}
-- **Hierarchy**:
-  - Headings: Bold / ExtraBold, tracking-tight
-  - Body: Regular / Medium text-sm with leading-relaxed
-  - Code / Tokens: Monospace font-mono text-xs
-
-### Layout & Utility Classes
-- **Layout Paradigms**: ${scrapeResult.styles.layoutPatterns.join(", ") || "Flexbox, CSS Grid, Responsive Containers"}
-${scrapeResult.styles.animations && scrapeResult.styles.animations.length > 0 ? `- **Animation & Transitions**: ${scrapeResult.styles.animations.join(", ")}` : ""}
-- **Primary Tailwind Classes**:
-  \`\`\`css
-  ${tailwind.join(" ")}
-  \`\`\`
-
----
-
-${
-  languagesSection
-    ? `## ${languagesSection}. Detected Languages & Code Stacks
-The target application utilizes and references the following programming languages, CLI tooling, and dialects:
-| Language / Tooling | Ecosystem Role | Detection Source |
-| :--- | :--- | :--- |
-${detectedLangs.map((lang) => `| **${lang}** | Implementation & Examples | DOM / Markdown / Scripts |`).join("\n")}
-
----
-`
-    : ""
-}
-## ${logicSection}. Interactive Logic & State Architecture
-
-### Core State Variables
-${
-  states.length > 0
-    ? states.map((s) => `- \`${s}\``).join("\n")
-    : "- `query: string` (User search or filter input)\n- `isLoading: boolean` (Asynchronous loading state)\n- `activeTab: string` (Current view mode)"
-}
-
-### Event Handlers & User Workflows
-${
-  events.length > 0
-    ? events.map((e) => `- \`${e}\``).join("\n")
-    : "- `onSubmit(event)`: Handles user submissions and parameter validation.\n- `onFilterChange(value)`: Triggers re-computation or data fetching.\n- `onReset()`: Restores initial component state."
-}
-
-${
-  scrapeResult.logic.forms && scrapeResult.logic.forms.length > 0
-    ? `\n### Forms & Input Schemas\n${scrapeResult.logic.forms
-        .map(
-          (f, idx) => `#### Form ${idx + 1}: \`${f.method} ${f.action}\`
-${f.fields.map((fd) => `- \`${fd.name}\` (${fd.type})${fd.required ? " **[required]**" : ""}${fd.placeholder ? ` placeholder: "${fd.placeholder}"` : ""}`).join("\n")}`
-        )
-        .join("\n\n")}\n`
-    : ""
-}${endpoints.length > 0 ? `\n### Connected Endpoints & APIs\n${endpoints.map((ep) => `- \`${ep}\``).join("\n")}\n` : ""}
----
-
-## ${directivesSection}. Universal AI Model Directives
-
-### For Google Gemini
-- Ground code generation in the CSS variables and Tailwind classes documented above.
-- Ensure strict TypeScript typing and explicit component props interfaces.
-${frameworks.includes("Next.js") ? "- Use Next.js 15 App Router standards (React Server Components, server actions).\n" : ""}${detectedLangs.length > 0 ? `- Primary code languages to produce: ${detectedLangs.join(", ")}.\n` : ""}
-### For OpenAI ChatGPT
-- Apply the color tokens and state machines when generating UI or backend handlers.
-- Prefer modular hooks for managing state variables.
-${detectedLangs.length > 0 ? `- Target implementation languages: ${detectedLangs.join(", ")}.\n` : ""}
-### For Cursor & Windsurf
-- Reference this skill when generating pages or components within this workspace.
-- Adhere to the declared utility classes and avoid ad-hoc styling.
-${detectedLangs.length > 0 ? `- Format code blocks using syntax for: ${detectedLangs.join(", ")}.\n` : ""}
-### For Anthropic Claude
-- Use the structural layout patterns and design constraints outlined above.
-${detectedLangs.length > 0 ? `- Support idiomatic patterns for ${detectedLangs.join(", ")}.\n` : ""}`;
-}
-
-function buildGeminiPrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
-  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
-  const states =
-    scrapeResult.logic.stateVariables.length > 0
-      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
-      : "activeTab, query, isLoading";
-  const colors =
-    scrapeResult.styles.colors.length > 0
-      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
-      : "#1a73e8, #000000, #ffffff";
-  const tailwind =
-    scrapeResult.styles.tailwindClasses.length > 0
-      ? scrapeResult.styles.tailwindClasses.slice(0, 15).join(" ")
-      : "flex flex-col gap-4 text-zinc-100";
-
-  return `You are a Senior Frontend Architect and Gemini Coding Assistant specialized in the "${name}" skill.
-When writing code or answering queries related to ${title || scrapeResult.targetUrl}:
-1. Use these primary colors: ${colors}.
-2. Use Tailwind utility classes matching: ${tailwind}.
-3. Enforce the state management pattern: ${states}.
-${scrapeResult.logic.frameworks?.length ? `4. Target Frameworks: ${scrapeResult.logic.frameworks.join(", ")}.\n` : ""}${langs.length ? `5. Code Languages & Dialects: ${langs.join(", ")}.\n` : ""}6. Always produce clean, typed TypeScript and modern React components.`;
-}
-
-function buildChatGptPrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
-  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
-  const colors =
-    scrapeResult.styles.colors.length > 0
-      ? scrapeResult.styles.colors.slice(0, 4).join(", ")
-      : "#1a73e8, #000000, #ffffff";
-  const events =
-    scrapeResult.logic.eventHandlers.length > 0
-      ? scrapeResult.logic.eventHandlers.slice(0, 4).join(", ")
-      : "onSubmit(), onFilterChange(), onReset()";
-
-  return `Role: Expert UI/UX & Full-Stack Engineer implementing ${title}.
-Instructions:
-- Maintain strict design fidelity with ${scrapeResult.targetUrl}.
-- Primary palette: ${colors}.
-${langs.length ? `- Supported Languages & Tooling: ${langs.join(", ")}.\n` : ""}- Ensure all interactive handlers (${events}) handle loading and error boundaries gracefully.`;
-}
-
-function buildCursorRules(name: string, title: string, scrapeResult: ScrapeResult): string {
-  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
-  const states =
-    scrapeResult.logic.stateVariables.length > 0
-      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
-      : "activeTab, query, isLoading";
-  const colors =
-    scrapeResult.styles.colors.length > 0
-      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
-      : "#1a73e8, #000000, #ffffff";
-  const tailwind =
-    scrapeResult.styles.tailwindClasses.length > 0
-      ? scrapeResult.styles.tailwindClasses.slice(0, 10).join(" ")
-      : "flex flex-col gap-4";
-
-  return `# .cursorrules for ${name}
-# Source: ${scrapeResult.targetUrl}
-
-- Design System Colors: ${colors}
-- Typography: ${scrapeResult.styles.fonts.join(", ") || "sans-serif"}
-${langs.length ? `- Languages & Dialects: ${langs.join(", ")}\n` : ""}- Core Layout Classes: ${tailwind}
-- When creating UI components matching ${title}, preserve this state flow:
-  ${states}
-`;
-}
-
-function buildClaudePrompt(name: string, title: string, scrapeResult: ScrapeResult): string {
-  const langs = scrapeResult.languages || scrapeResult.logic.languages || [];
-  const states =
-    scrapeResult.logic.stateVariables.length > 0
-      ? scrapeResult.logic.stateVariables.slice(0, 5).join(", ")
-      : "activeTab, query, isLoading";
-  const colors =
-    scrapeResult.styles.colors.length > 0
-      ? scrapeResult.styles.colors.slice(0, 5).join(", ")
-      : "#1a73e8, #000000, #ffffff";
-
-  return `You are an expert design systems engineer implementing features according to the ${name} specification.
-Reference the design tokens: ${colors}.
-${langs.length ? `Implement code using idiomatic patterns for: ${langs.join(", ")}.\n` : ""}Maintain the component state model: ${states}.
-Implement complete, un-truncated React + Tailwind code.`;
-}
-
-/**
- * Heuristic Synthesizer (Zero-Cost Mode)
- */
-export function heuristicSynthesizeSkill(scrapeResult: ScrapeResult): UniversalSkill {
-  const parsedUrl = new URL(scrapeResult.targetUrl);
-  const hostParts = parsedUrl.hostname.replace(/^www\./, "").split(".");
-  const domainSlug = hostParts[0].toLowerCase().replace(/[^a-z0-9]/g, "_");
-  const pathParts = parsedUrl.pathname
-    .split("/")
-    .filter(Boolean)
-    .map((p) => p.toLowerCase().replace(/[^a-z0-9]/g, "_"));
-
-  const action = pathParts.length > 0 ? pathParts.join("_") : "skill";
-  const name = sanitizeSkillName(`${domainSlug}_${action}`);
-  const title = scrapeResult.title || `${domainSlug} Engine`;
-
-  const skillMd = buildFallbackSkillMd(name, title, scrapeResult);
-  const componentCode = buildFallbackComponent(name, scrapeResult);
+  const cssVariablesFormatted =
+    parsed.cssVariablesFormatted || formatCssVariables(semanticColors, primaryFont, monoFont);
+  const tailwindConfigFormatted =
+    parsed.tailwindConfigFormatted || formatTailwindConfig(semanticColors, primaryFont, monoFont);
+  const tokensJsonFormatted =
+    parsed.tokensJsonFormatted || formatTokensJson(semanticColors, primaryFont, monoFont);
 
   return {
     name,
     title,
-    description: `Universal skill specifying visual design system tokens, interactive logic, and component architecture extracted from ${title}.`,
-    targetUrl: scrapeResult.targetUrl,
-    skillMd,
+    description: parsed.description || fallbackData.description,
+    targetUrl,
+    aestheticSummary,
+    designMd,
+    skillMd: designMd,
     componentCode,
+    specimenCode: componentCode,
+    semanticColors,
+    typographyScale,
+    primaryFont,
+    headingFont,
+    monoFont,
+    spacingScale: parsed.spacingScale || fallbackData.spacingScale,
+    radiiScale: parsed.radiiScale || fallbackData.radiiScale,
+    shadowScale: parsed.shadowScale || fallbackData.shadowScale,
+    cssVariablesFormatted,
+    tailwindConfigFormatted,
+    tokensJsonFormatted,
     styles: scrapeResult.styles,
     logic: scrapeResult.logic,
-    languages: scrapeResult.languages || scrapeResult.logic.languages || [],
     modelPrompts: {
-      gemini: buildGeminiPrompt(name, title, scrapeResult),
-      chatgpt: buildChatGptPrompt(name, title, scrapeResult),
-      cursor: buildCursorRules(name, title, scrapeResult),
-      claude: buildClaudePrompt(name, title, scrapeResult),
+      cursor: parsed.modelPrompts?.cursor || fallbackData.modelPrompts.cursor,
+      claude: parsed.modelPrompts?.claude || fallbackData.modelPrompts.claude,
+      gemini: parsed.modelPrompts?.gemini || fallbackData.modelPrompts.gemini,
+      chatgpt: parsed.modelPrompts?.chatgpt || fallbackData.modelPrompts.chatgpt,
     },
     rawMarkdownSnippet: scrapeResult.markdown.slice(0, 1500),
     crawledPages: scrapeResult.crawledPages,
     frameworks: scrapeResult.logic.frameworks,
+    languages: scrapeResult.languages || scrapeResult.logic.languages || [],
   };
 }
 
 /**
- * Main generator entry point with multi-provider routing
+ * Main generator entry point with multi-provider routing (Groq, Gemini, or Heuristic)
  */
 export async function generateUniversalSkill(
   scrapeResult: ScrapeResult,
@@ -656,58 +1422,36 @@ export async function generateUniversalSkill(
     geminiApiKey?: string;
     preferredLlm?: "groq" | "gemini" | "auto";
   }
-): Promise<UniversalSkill> {
+): Promise<DesignSystemData> {
   const groqKey = options.groqApiKey?.trim() || process.env.GROQ_API_KEY?.trim();
   const geminiKey = options.geminiApiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
 
-  const frameworksText = scrapeResult.logic.frameworks?.join(", ") || "Vanilla / Standard Web";
   const crawledPagesText = scrapeResult.crawledPages?.length
     ? `${scrapeResult.crawledPages.length} pages explored:\n` +
       scrapeResult.crawledPages
         .map((p) => `  - ${p.title} (${p.url}) [Depth ${p.depth}]`)
         .join("\n")
-    : "Single landing page";
-
-  const formsText = scrapeResult.logic.forms?.length
-    ? scrapeResult.logic.forms
-        .map(
-          (f) =>
-            `  - ${f.method} ${f.action}: fields [${f.fields.map((fd) => `${fd.name}${fd.required ? "*" : ""} (${fd.type})`).join(", ")}]`
-        )
-        .join("\n")
-    : "None";
+    : "Single page exploration";
 
   const promptContent = `Target URL: ${scrapeResult.targetUrl}
 Page Title: ${scrapeResult.title || "Unknown"}
 Page Description: ${scrapeResult.description || "N/A"}
-Detected Frameworks & Libraries: ${frameworksText}
-Detected Programming Languages & Code Stacks: ${scrapeResult.languages?.join(", ") || scrapeResult.logic.languages?.join(", ") || "Standard Web (TypeScript, JavaScript, HTML, CSS)"}
-Crawled Site Architecture:
+Explored Pages:
 ${crawledPagesText}
 
-Extracted Styles:
-- Colors: ${scrapeResult.styles.colors.join(", ")}
+Extracted Style Tokens:
+- Colors: ${scrapeResult.styles.colors.slice(0, 30).join(", ")}
 - Fonts: ${scrapeResult.styles.fonts.join(", ")}
 - CSS Variables: ${JSON.stringify(scrapeResult.styles.cssVariables)}
 - Tailwind Utility Classes: ${scrapeResult.styles.tailwindClasses.slice(0, 30).join(" ")}
 - Layout Patterns: ${scrapeResult.styles.layoutPatterns.join(", ")}
-- Animations & Effects: ${scrapeResult.styles.animations?.join(", ") || "Standard transitions"}
 - Shadows: ${scrapeResult.styles.shadows?.join(", ") || "Standard"}
 - Radii: ${scrapeResult.styles.radii?.join(", ") || "Standard"}
-- Media Queries: ${scrapeResult.styles.mediaQueries?.join(", ") || "Responsive"}
 
-Extracted Logic:
-- State Variables: ${scrapeResult.logic.stateVariables.join(", ")}
-- Event Handlers: ${scrapeResult.logic.eventHandlers.join(", ")}
-- Interactive Elements: ${scrapeResult.logic.interactiveElements.join(", ")}
-- Forms & Validation:
-${formsText}
-- API Endpoints: ${scrapeResult.logic.apiEndpoints.join(", ")}
-
-Scraped Content Markdown:
+Scraped DOM Markdown Snippet:
 ${scrapeResult.markdown.slice(0, 15000)}
 
-Formulate a production-grade SKILL.md and React+Tailwind component capturing both the styles, multi-page architecture, and logic. Output strict JSON.`;
+Formulate a production-grade DESIGN.md following the Google Stitch and DesignMD standard. Output strict JSON.`;
 
   // Try Groq if preferred or available
   if ((options.preferredLlm === "groq" || !options.preferredLlm) && groqKey) {
@@ -725,7 +1469,7 @@ Formulate a production-grade SKILL.md and React+Tailwind component capturing bot
 
       const responseText = completion.choices[0]?.message?.content || "";
       if (responseText) {
-        return parseAndNormalizeOutput(responseText, scrapeResult.targetUrl, scrapeResult);
+        return parseAndNormalizeDesignOutput(responseText, scrapeResult.targetUrl, scrapeResult);
       }
     } catch (err) {
       console.warn("Groq generation failed, attempting Gemini fallback:", err);
@@ -748,7 +1492,7 @@ Formulate a production-grade SKILL.md and React+Tailwind component capturing bot
           });
           const responseText = response.text || "";
           if (responseText) {
-            return parseAndNormalizeOutput(responseText, scrapeResult.targetUrl, scrapeResult);
+            return parseAndNormalizeDesignOutput(responseText, scrapeResult.targetUrl, scrapeResult);
           }
         } catch {}
       }
@@ -758,5 +1502,5 @@ Formulate a production-grade SKILL.md and React+Tailwind component capturing bot
   }
 
   // Zero-cost Heuristic Fallback
-  return heuristicSynthesizeSkill(scrapeResult);
+  return heuristicSynthesizeDesignSystem(scrapeResult);
 }

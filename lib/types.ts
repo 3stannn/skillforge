@@ -63,17 +63,53 @@ export interface ModelPrompts {
   gemini: string;       // Google Gemini System Instruction & Persona
   chatgpt: string;      // OpenAI Custom GPT / System prompt
   cursor: string;       // .cursorrules / Windsurf rules format
-  claude: string;       // Claude Project prompt
+  claude: string;       // Claude Project / CLAUDE.md prompt
 }
 
-export interface UniversalSkill {
+export interface SemanticColorToken {
+  role: string;         // "primary" | "background" | "surface" | "text" | "muted" | "border" | "accent" | "danger" | "success"
+  name: string;         // Human label, e.g. "Acid Lime", "Obsidian Canvas"
+  hex: string;          // Hex color e.g. "#0f1011"
+  usage: string;        // Where and how it is applied
+}
+
+export interface TypographyScaleItem {
+  level: string;        // "display" | "h1" | "h2" | "h3" | "body" | "small" | "code"
+  size: string;         // "48px"
+  lineHeight: string;   // "1.2"
+  weight: string;       // "600"
+  letterSpacing?: string; // "-0.02em"
+  sample?: string;      // Example specimen phrase
+}
+
+export interface ComponentSpecItem {
+  name: string;
+  description: string;
+  variantDetails?: string;
+}
+
+export interface DesignSystemData {
   id?: string;
-  name: string;                         // kebab-case or snake-case skill identifier
-  title: string;                        // Human-readable title
-  description: string;                  // Instruction-dense description
+  name: string;                         // kebab-case or snake_case identifier
+  title: string;                        // Human-readable brand / product title
+  description: string;                  // Short design summary or tagline
   targetUrl: string;
-  skillMd: string;                      // Canonical SKILL.md with YAML frontmatter
-  componentCode: string;                // Production React + Tailwind component (TSX)
+  aestheticSummary?: string;            // Aesthetic description (e.g. "Midnight precision instrument")
+  designMd: string;                     // Canonical Google Stitch / DesignMD document
+  skillMd: string;                      // Backwards compatibility alias for designMd
+  componentCode: string;                // Interactive React + Tailwind specimen TSX component
+  specimenCode?: string;                // Explicit specimen component alias
+  semanticColors: SemanticColorToken[];
+  typographyScale: TypographyScaleItem[];
+  primaryFont: string;
+  headingFont: string;
+  monoFont: string;
+  spacingScale: string[];
+  radiiScale: string[];
+  shadowScale: string[];
+  cssVariablesFormatted: string;        // Formatted CSS :root { ... }
+  tailwindConfigFormatted: string;      // Formatted Tailwind v4 @theme / v3 config
+  tokensJsonFormatted: string;          // W3C Design Tokens JSON format
   styles: ExtractedStyles;
   logic: ExtractedLogic;
   modelPrompts: ModelPrompts;
@@ -84,12 +120,17 @@ export interface UniversalSkill {
   languages?: string[];
 }
 
+/**
+ * UniversalSkill alias for backwards compatibility across existing components
+ */
+export type UniversalSkill = DesignSystemData;
+
 export interface GenerationStepUpdate {
   step: 1 | 2 | 3 | 4;
   status: "pending" | "active" | "completed" | "error";
   message: string;
   details?: string;
-  result?: UniversalSkill;
+  result?: DesignSystemData;
   error?: string;
 }
 

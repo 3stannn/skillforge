@@ -13,26 +13,26 @@ export interface ProgressTrackerProps {
 const STEP_DEFINITIONS = [
   {
     step: 1,
-    title: "Scraping target URL & extracting styles + scripts",
-    description: "Capturing CSS variables, color palettes, fonts, and inline scripts",
+    title: "Exploring URL & crawling site hierarchy",
+    description: "Discovering key pages, DOM components, and external stylesheets",
     icon: Globe,
   },
   {
     step: 2,
-    title: "Analyzing visual design system & interactive logic",
-    description: "Synthesizing typography hierarchy, layout rules, state flows, and event listeners",
+    title: "Extracting design tokens, colors & typography",
+    description: "Categorizing semantic palette, typography scale, spacing, and shadows",
     icon: Palette,
   },
   {
     step: 3,
-    title: "Synthesizing universal SKILL.md for all AI models",
-    description: "Formulating canonical YAML frontmatter, design specifications, and model directives",
+    title: "Synthesizing spec-compliant DESIGN.md with AI",
+    description: "Formulating design principles, component specs, and agent implementation rules",
     icon: Sparkles,
   },
   {
     step: 4,
-    title: "Compiling component code & cross-model adapters",
-    description: "Generating React + Tailwind TSX component and export prompts for Gemini, ChatGPT, Cursor, and Claude",
+    title: "Compiling Tailwind config, CSS variables & live specimens",
+    description: "Generating code tokens and interactive preview specimens",
     icon: Cpu,
   },
 ];
@@ -50,7 +50,7 @@ export function ProgressTracker({
       <div className="flex items-center justify-between border-b border-[#262930] pb-4">
         <div className="space-y-0.5">
           <div className="text-[11px] font-mono text-[#3186ff] font-semibold tracking-wider uppercase">
-            Extraction Pipeline
+            Design Extraction Pipeline
           </div>
           <div className="text-xs text-[#9aa0a6] truncate max-w-md font-mono">
             {activeUrl}

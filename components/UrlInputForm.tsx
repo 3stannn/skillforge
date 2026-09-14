@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowRight, Globe, AlertCircle, Compass, Zap } from "lucide-react";
+import { ArrowRight, Globe, AlertCircle, Compass, Zap, Sparkles } from "lucide-react";
+import { LINEAR_EXAMPLE_DESIGN_SYSTEM } from "@/lib/exampleDesignSystem";
+import { DesignSystemData } from "@/lib/types";
 
 export interface UrlInputFormProps {
   onSubmit: (url: string, options?: { crawlDepth: number; maxPages: number }) => void;
   isLoading: boolean;
+  onLoadExample?: (example: DesignSystemData) => void;
   onOpenConfig?: () => void;
   onOpenHistory?: () => void;
   onShowSplash?: () => void;
@@ -14,30 +17,42 @@ export interface UrlInputFormProps {
 
 const SAMPLE_URLS = [
   {
-    name: "Google Antigravity",
-    url: "https://antigravity.google/",
-    type: "Design & Logic",
+    name: "linear.app",
+    url: "https://linear.app",
+    type: "★ .agents/DESIGN.md",
+    isExample: true,
   },
   {
-    name: "Tailwind CSS",
-    url: "https://tailwindcss.com",
-    type: "Design System",
+    name: "stripe.com",
+    url: "https://stripe.com",
+    type: "Fintech Clean",
   },
   {
-    name: "CoinGecko API",
-    url: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd",
-    type: "REST State",
+    name: "huly.io",
+    url: "https://huly.io",
+    type: "Cosmic Aurora",
   },
   {
-    name: "Cat Facts API",
-    url: "https://catfact.ninja/fact",
-    type: "API Endpoint",
+    name: "apple.com",
+    url: "https://apple.com",
+    type: "Minimalist Vitrine",
+  },
+  {
+    name: "github.com",
+    url: "https://github.com",
+    type: "Developer Monospace",
+  },
+  {
+    name: "notion.so",
+    url: "https://notion.so",
+    type: "Warm Editorial",
   },
 ];
 
 export function UrlInputForm({
   onSubmit,
   isLoading,
+  onLoadExample,
 }: UrlInputFormProps) {
   const [url, setUrl] = useState("");
   const [crawlMode, setCrawlMode] = useState<"deep" | "single">("deep");
@@ -65,7 +80,7 @@ export function UrlInputForm({
         finalUrl = `https://${trimmed}`;
         setUrl(finalUrl);
       } else {
-        setValidationError("Please provide a valid URL format (e.g. https://example.com)");
+        setValidationError("Please provide a valid URL format (e.g. stripe.com or https://linear.app)");
         return;
       }
     }
@@ -76,33 +91,62 @@ export function UrlInputForm({
     });
   };
 
-  const selectSample = (sampleUrl: string) => {
-    setUrl(sampleUrl);
+  const selectSample = (sample: (typeof SAMPLE_URLS)[number]) => {
+    if (sample.isExample && onLoadExample) {
+      onLoadExample(LINEAR_EXAMPLE_DESIGN_SYSTEM);
+      return;
+    }
+    setUrl(sample.url);
     setValidationError(null);
   };
 
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-      className="w-full max-w-5xl mx-auto space-y-10 py-6 sm:py-12"
+      className="w-full max-w-5xl mx-auto space-y-8 py-6 sm:py-10"
     >
-      {/* Hero Section (Google Antigravity Sleek Dark Aesthetics) */}
-      <div className="text-center space-y-5">
-        {/* Central Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-[13px] font-medium text-[#e8eaed] bg-[#121316] border border-[#262930] shadow-md transition-all hover:scale-105 hover:border-[#3186ff]/50">
-          <span className="w-2 h-2 rounded-full bg-[#3186ff] animate-pulse shadow-[0_0_8px_#3186ff]" />
-          <span>SkillForge • Universal Skill Engine</span>
+      {/* Hero Top Bar & Navigation */}
+      <div className="flex items-center justify-between px-2 text-xs">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-[#e8eaed] bg-[#101215] border border-[#1e2126] shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-[#585a5c] shadow-[0_0_8px_#585a5c]" />
+          <span className="font-mono text-[11px] text-[#9aa0a6]">Design System Synthesizer</span>
         </div>
 
-        {/* Large Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-[68px] font-semibold text-[#ffffff] leading-[1.06] tracking-[-0.035em] max-w-4xl mx-auto">
-          Extract design tokens & logic into <span className="text-[#3186ff]">SKILL.md</span>
+        <button
+          type="button"
+          onClick={() => onLoadExample && onLoadExample(LINEAR_EXAMPLE_DESIGN_SYSTEM)}
+          className="text-xs text-[#9aa0a6] hover:text-white flex items-center gap-1 font-medium transition-colors cursor-pointer group"
+        >
+          <span className="text-[#34d399] font-mono text-[10px] uppercase font-semibold">New</span>
+          <span>Multi-Page Crawl & Token Synthesis</span>
+          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform text-[#585a5c]" />
+        </button>
+      </div>
+
+      {/* Hero Headline & Subtitle */}
+      <div className="text-left space-y-4 px-2">
+        <h1 className="text-4xl sm:text-6xl md:text-[68px] font-semibold text-[#ffffff] leading-[1.05] tracking-[-0.035em] max-w-4xl">
+          The design system extractor for teams and agents
         </h1>
 
-        {/* Subtitle */}
-        <p className="text-sm sm:text-base md:text-lg text-[#9aa0a6] font-normal max-w-2xl mx-auto leading-relaxed">
-          Deep crawls documentation, visual styles, external stylesheets, state flows, and APIs from any URL into an authoritative agent skill.
+        <p className="text-sm sm:text-base md:text-lg text-[#8a8f98] font-normal max-w-2xl leading-relaxed">
+          Purpose-built for exploring and building products. Designed for the AI era — extract the design system behind <span className="text-white font-medium">any</span> website into a structured <code className="text-white font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/10">DESIGN.md</code>.
         </p>
+
+        {/* Expected Output Reference Banner (.agents/DESIGN.md) */}
+        {onLoadExample && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => onLoadExample(LINEAR_EXAMPLE_DESIGN_SYSTEM)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-[#1a1d22] text-[#d1d1d1] hover:text-white hover:bg-[#252830] border border-[#2a2e36] hover:border-[#3c4043] transition-all cursor-pointer shadow-sm group"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#ffe432] shadow-[0_0_6px_#ffe432]" />
+              <span>Preview Expected Output: <strong>Linear Style Reference</strong> (<code className="text-[#9aa0a6] font-mono">.agents/DESIGN.md</code>)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#8a8f98] group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Search & Mode Container */}
@@ -120,7 +164,7 @@ export function UrlInputForm({
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-[#3186ff]" />
-              <span>Deep Crawl (Multi-Page)</span>
+              <span>Multi-Page Exploration</span>
             </button>
             <button
               type="button"
@@ -137,7 +181,7 @@ export function UrlInputForm({
           </div>
         </div>
 
-        {/* Large Google Antigravity Search Pill Container */}
+        {/* Search Pill Container */}
         <div className="flex items-center gap-3 p-2 pl-6 bg-[#0a0b0e] border border-[#262930] shadow-xl hover:border-[#3c4043] focus-within:border-[#3186ff] focus-within:ring-4 focus-within:ring-[#1a73e8]/20 rounded-full transition-all">
           <Globe className="w-5 h-5 text-[#9aa0a6] shrink-0" />
           <input
@@ -149,8 +193,8 @@ export function UrlInputForm({
             }}
             placeholder={
               crawlMode === "deep"
-                ? "https://antigravity.google or docs site to deep crawl..."
-                : "https://antigravity.google or single page URL..."
+                ? "linear.app or paste documentation URL..."
+                : "stripe.com or paste any website URL..."
             }
             disabled={isLoading}
             className="w-full bg-transparent border-0 text-sm sm:text-base text-white placeholder-[#5f6368] focus:outline-none focus:ring-0 font-mono py-1.5"
@@ -160,15 +204,15 @@ export function UrlInputForm({
             disabled={isLoading || !url.trim()}
             className="px-6 py-3 rounded-full bg-[#ffffff] hover:bg-[#eff0f3] disabled:bg-[#1a1c22] disabled:text-[#5f6368] text-[#000000] text-sm font-semibold flex items-center gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
-            <span>{isLoading ? "Synthesizing..." : crawlMode === "deep" ? "Deep Crawl" : "Extract Skill"}</span>
+            <span>{isLoading ? "Generating..." : "Generate DESIGN.md"}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Deep Crawl Hint */}
+        {/* Mode Hint */}
         {crawlMode === "deep" && (
           <p className="text-[11px] text-[#5f6368] text-center font-mono">
-            Explores up to 5 subroutes (/docs, /api, /components), extracts external CSS & framework tokens
+            Explores key sub-routes (/docs, /components, /pricing) and external stylesheets for exact tokens.
           </p>
         )}
 
@@ -187,10 +231,17 @@ export function UrlInputForm({
             <button
               key={sample.name}
               type="button"
-              onClick={() => selectSample(sample.url)}
-              className="px-3.5 py-1.5 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#9aa0a6] hover:text-white border border-[#262930] hover:border-[#3186ff]/40 transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+              onClick={() => selectSample(sample)}
+              className={`px-3.5 py-1.5 rounded-full transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer group ${
+                sample.isExample
+                  ? "bg-[#5683da]/15 hover:bg-[#5683da]/25 text-[#a8c7fa] border border-[#5683da]/40 hover:border-[#5683da]/70 shadow-xs"
+                  : "bg-[#121316] hover:bg-[#1c1e24] text-[#9aa0a6] hover:text-white border border-[#262930] hover:border-[#3186ff]/40"
+              }`}
             >
               <span>{sample.name}</span>
+              <span className={`text-[10px] font-mono ${sample.isExample ? "text-[#ff8964]" : "text-[#5f6368] group-hover:text-[#3186ff]"}`}>
+                · {sample.type}
+              </span>
             </button>
           ))}
         </div>
