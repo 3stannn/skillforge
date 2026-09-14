@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Drawer } from "./ui/drawer";
 import { ApiKeysConfig } from "@/lib/types";
 import { Key, Eye, EyeOff, Sparkles, Cpu, ExternalLink, Check } from "lucide-react";
@@ -23,6 +23,13 @@ export function ConfigDrawer({
   const [showGemini, setShowGemini] = useState(false);
   const [showFirecrawl, setShowFirecrawl] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, []);
 
   // Sync state whenever config prop changes or drawer opens
   useEffect(() => {
@@ -32,7 +39,8 @@ export function ConfigDrawer({
   const handleSave = () => {
     onSaveConfig(localConfig);
     setSavedSuccess(true);
-    setTimeout(() => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
       setSavedSuccess(false);
       onClose();
     }, 500);

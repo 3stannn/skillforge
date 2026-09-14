@@ -90,7 +90,7 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
         </button>
 
         <div className="flex items-center gap-2 text-xs text-[#9aa0a6] font-mono">
-          <span className="w-2 h-2 rounded-full bg-[#34A853] shadow-[0_0_8px_#34A853]" />
+          <span className="w-2 h-2 rounded-full bg-blue-500" />
           <span className="hidden sm:inline">DESIGN.md Spec Ready</span>
           <span className="sm:hidden">Ready</span>
         </div>
@@ -104,17 +104,17 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
             <span className="text-lg sm:text-xl font-semibold text-white tracking-tight truncate max-w-lg">
               {skill.title || skill.name}
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#1a73e8]/15 text-[#3186ff] font-medium border border-[#1a73e8]/30">
-              <Palette className="w-3 h-3 text-[#3186ff]" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-blue-500/10 text-blue-400 font-medium border border-blue-500/20">
+              <Palette className="w-3 h-3 text-blue-400" />
               {skill.semanticColors?.length || skill.styles.colors.length} Colors
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#16181d] text-[#e8eaed] font-medium border border-[#262930]">
-              <FileText className="w-3 h-3 text-[#34A853]" />
+              <FileText className="w-3 h-3 text-blue-400" />
               DESIGN.md
             </span>
             {skill.crawledPages && skill.crawledPages.length > 1 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#34A853]/15 text-[#34A853] font-medium border border-[#34A853]/30">
-                <Compass className="w-3 h-3 text-[#34A853]" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#16181d] text-[#e8eaed] font-medium border border-[#262930]">
+                <Compass className="w-3 h-3 text-blue-400" />
                 {skill.crawledPages.length} Pages Explored
               </span>
             )}
@@ -144,7 +144,7 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
           <button
             type="button"
             onClick={handleCopyDesignMd}
-            className="px-3.5 py-2 rounded-full bg-[#ffffff] hover:bg-[#eff0f3] text-[#000000] text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all hover:scale-102 active:scale-98 cursor-pointer whitespace-nowrap"
+            className="px-3.5 py-2 rounded-full bg-[#ffffff] hover:bg-[#eff0f3] text-[#000000] text-xs font-semibold flex items-center gap-1.5 shadow-md transition-colors cursor-pointer whitespace-nowrap"
           >
             {copiedDesignMd ? (
               <>
@@ -163,9 +163,9 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
           <button
             type="button"
             onClick={handleDownloadDesignMd}
-            className="px-3.5 py-2 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#e8eaed] text-xs font-medium border border-[#262930] hover:border-[#3186ff]/40 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+            className="px-3.5 py-2 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#e8eaed] text-xs font-medium border border-[#262930] hover:border-blue-500/40 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5 text-[#3186ff]" />
+            <Download className="w-3.5 h-3.5 text-blue-400" />
             <span>.md File</span>
           </button>
 
@@ -173,9 +173,9 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
           <button
             type="button"
             onClick={() => setIsExportModalOpen(true)}
-            className="px-3.5 py-2 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all hover:scale-102 active:scale-98 cursor-pointer whitespace-nowrap"
+            className="px-3.5 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-colors cursor-pointer whitespace-nowrap"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#ffe432]" />
+            <Sparkles className="w-3.5 h-3.5 text-white" />
             <span>AI Rules ▾</span>
           </button>
 
@@ -184,7 +184,7 @@ export function ResultsWorkspace({ skill, onReset }: ResultsWorkspaceProps) {
             type="button"
             onClick={handleDownloadZip}
             disabled={isDownloading}
-            className="px-3.5 py-2 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#e8eaed] text-xs font-medium border border-[#262930] hover:border-[#3186ff]/40 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+            className="px-3.5 py-2 rounded-full bg-[#121316] hover:bg-[#1c1e24] text-[#e8eaed] text-xs font-medium border border-[#262930] hover:border-blue-500/40 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
           >
             <Download className="w-3.5 h-3.5 text-[#9aa0a6]" />
             <span>{isDownloading ? "Bundling..." : "Download .zip"}</span>

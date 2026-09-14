@@ -37,11 +37,18 @@ const STEP_DEFINITIONS = [
   },
 ];
 
-export function ProgressTracker({
+export const ProgressTracker = React.memo(function ProgressTracker({
   currentStep,
   steps,
   activeUrl,
 }: ProgressTrackerProps) {
+  const stepsByStep = React.useMemo(() => {
+    const map = new Map<number, GenerationStepUpdate>();
+    for (const step of steps) {
+      map.set(step.step, step);
+    }
+    return map;
+  }, [steps]);
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
@@ -64,7 +71,7 @@ export function ProgressTracker({
 
       <div className="space-y-3">
         {STEP_DEFINITIONS.map((def) => {
-          const stepData = steps.find((s) => s.step === def.step);
+          const stepData = stepsByStep.get(def.step);
           const isCompleted = stepData?.status === "completed" || currentStep > def.step;
           const isActive = stepData?.status === "active" || currentStep === def.step;
           const isError = stepData?.status === "error";
@@ -127,11 +134,11 @@ export function ProgressTracker({
                   {stepData?.message || def.description}
                 </p>
 
-                {stepData?.error && (
+                {stepData?.error ? (
                   <p className="text-xs text-rose-300 font-mono mt-1 bg-rose-950/60 p-1.5 rounded-lg border border-rose-800/60">
                     {stepData.error}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
           );
@@ -139,6 +146,6 @@ export function ProgressTracker({
       </div>
     </div>
   );
-}
+});
 
 export default ProgressTracker;

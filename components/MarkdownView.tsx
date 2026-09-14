@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Copy, Check, Terminal, ChevronRight } from "lucide-react";
 
 interface MarkdownViewProps {
@@ -274,8 +274,8 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   );
 }
 
-export function MarkdownView({ content }: MarkdownViewProps) {
-  const blocks = parseBlocks(content);
+export const MarkdownView = React.memo(function MarkdownView({ content }: MarkdownViewProps) {
+  const blocks = useMemo(() => parseBlocks(content), [content]);
 
   return (
     <div className="space-y-4 text-[#e8eaed] text-xs sm:text-[13px] leading-relaxed select-text font-sans">
@@ -421,4 +421,4 @@ export function MarkdownView({ content }: MarkdownViewProps) {
       })}
     </div>
   );
-}
+});

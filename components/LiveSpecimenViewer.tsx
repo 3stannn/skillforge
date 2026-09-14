@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Copy,
   Check,
@@ -24,13 +24,21 @@ export function LiveSpecimenViewer({ design }: LiveSpecimenViewerProps) {
   const [copied, setCopied] = useState(false);
   const [inputText, setInputText] = useState("");
 
-  const primaryColor = design.semanticColors.find((c) => c.role === "primary")?.hex || "#3b82f6";
-  const bg = design.semanticColors.find((c) => c.role === "background")?.hex || "#08090a";
-  const surface = design.semanticColors.find((c) => c.role === "surface")?.hex || "#0f1011";
-  const text = design.semanticColors.find((c) => c.role === "text")?.hex || "#ffffff";
-  const muted = design.semanticColors.find((c) => c.role === "muted")?.hex || "#8a8f98";
-  const border = design.semanticColors.find((c) => c.role === "border")?.hex || "#23252a";
-  const accent = design.semanticColors.find((c) => c.role === "accent")?.hex || "#8b5cf6";
+  const colorsByRole = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of design.semanticColors) {
+      map.set(c.role, c.hex);
+    }
+    return map;
+  }, [design.semanticColors]);
+
+  const primaryColor = colorsByRole.get("primary") || "#3b82f6";
+  const bg = colorsByRole.get("background") || "#08090a";
+  const surface = colorsByRole.get("surface") || "#0f1011";
+  const text = colorsByRole.get("text") || "#ffffff";
+  const muted = colorsByRole.get("muted") || "#8a8f98";
+  const border = colorsByRole.get("border") || "#23252a";
+  const accent = colorsByRole.get("accent") || "#8b5cf6";
 
   const getCodeContent = () => {
     switch (activeTab) {
@@ -94,61 +102,61 @@ export function LiveSpecimenViewer({ design }: LiveSpecimenViewerProps) {
           <button
             type="button"
             onClick={() => setActiveTab("specimens")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "specimens"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#3186ff]" />
+            <Sparkles className={`w-3.5 h-3.5 ${activeTab === "specimens" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Specimens</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("tailwind")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "tailwind"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Code2 className="w-3.5 h-3.5 text-[#06b6d4]" />
+            <Code2 className={`w-3.5 h-3.5 ${activeTab === "tailwind" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Tailwind</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("css")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "css"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <FileCode className="w-3.5 h-3.5 text-[#ffe432]" />
+            <FileCode className={`w-3.5 h-3.5 ${activeTab === "css" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>CSS Variables</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("json")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "json"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-[#8b5cf6]" />
+            <Layers className={`w-3.5 h-3.5 ${activeTab === "json" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Tokens JSON</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("tsx")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "tsx"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Sliders className="w-3.5 h-3.5 text-[#34A853]" />
+            <Sliders className={`w-3.5 h-3.5 ${activeTab === "tsx" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>TSX Component</span>
           </button>
         </div>
@@ -265,7 +273,7 @@ export function LiveSpecimenViewer({ design }: LiveSpecimenViewerProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#9aa0a6]">
-                  Surfaces & Autonomous Agent Cards (Inspo 2)
+                  Surfaces & Autonomous Agent Cards
                 </span>
                 <span className="text-[11px] font-mono text-[#5f6368]">Live styled with extracted tokens</span>
               </div>

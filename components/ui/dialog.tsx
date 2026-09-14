@@ -10,6 +10,15 @@ export interface DialogProps {
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl";
 }
 
+const WIDTH_CLASSES = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+  "4xl": "max-w-4xl",
+};
+
 export function Dialog({
   isOpen,
   onClose,
@@ -32,15 +41,6 @@ export function Dialog({
 
   if (!isOpen) return null;
 
-  const widthClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
-    "4xl": "max-w-4xl",
-  };
-
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
@@ -54,16 +54,16 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
-        className={`relative w-full ${widthClasses[maxWidth]} bg-[#0a0b0e] border border-[#262930] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col max-h-[90vh] text-white`}
+        className={`relative w-full ${WIDTH_CLASSES[maxWidth]} bg-[#0a0b0e] border border-[#262930] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col max-h-[90vh] text-white`}
       >
         <div className="flex items-center justify-between pb-4 border-b border-[#262930]">
           <div>
             <h2 id="dialog-title" className="text-lg font-semibold text-white">
               {title}
             </h2>
-            {description && (
+            {description ? (
               <p className="text-xs sm:text-sm text-[#9aa0a6] mt-1">{description}</p>
-            )}
+            ) : null}
           </div>
           <button
             onClick={onClose}

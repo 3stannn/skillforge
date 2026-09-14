@@ -7,7 +7,10 @@ const nextConfig = {
     "@mozilla/readability",
     "turndown",
     "cheerio"
-  ]
+  ],
+  experimental: {
+    optimizePackageImports: ["lucide-react"]
+  }
 };
 
 export default nextConfig;

@@ -14,17 +14,17 @@ Formulate an authoritative, production-grade "DESIGN.md" specification following
 
 Rules:
 1. Produce a clean identifier name (snake_case, 3-64 chars) matching ^[a-z0-9_]+$.
-2. Formulate an aestheticSummary describing the site's design archetype (e.g. "Aurora through a midnight observatory — the hero is a vertical beam of violet melting into coral, and every quiet section below it borrows that same two-color story told at lower volume.").
+2. Formulate an aestheticSummary describing the site's design archetype concisely without generic purple/violet AI-slop cliches.
 3. Extract and organize Semantic Colors into a comprehensive palette (Obsidian Canvas, Void, Charcoal Card, Slate Edge, Iron Veil, Smoke, Ash, Frost, Linen, Snow, Electric Iris, Ember Pulse, Molasses).
 4. Extract Typography scale (caption, body, body-lg, subheading, heading-sm, heading, display-sm, display) with sizes in px, line-heights, weights, and letter-spacing.
 5. Formulate a complete, spec-compliant "DESIGN.md" markdown document matching the exact Style Reference structure:
-   - # [Brand] — Style Reference
+   - # [Brand] - Style Reference
    - > [Poetic description]
    - **Theme:** mixed (or dark / light)
    - [Detailed atmosphere & design overview paragraph]
-   - ## Tokens — Colors (Markdown table: Name | Value | Token | Role)
-   - ## Tokens — Typography (Font breakdown with Substitutes, Weights, Sizes, Line height, Letter spacing, Role, plus ### Type Scale table)
-   - ## Tokens — Spacing & Shapes (Base unit 4px, Density comfortable, Spacing Scale table, Border Radius table, Shadows table, Layout specs)
+   - ## Tokens - Colors (Markdown table: Name | Value | Token | Role)
+   - ## Tokens - Typography (Font breakdown with Substitutes, Weights, Sizes, Line height, Letter spacing, Role, plus ### Type Scale table)
+   - ## Tokens - Spacing & Shapes (Base unit 4px, Density comfortable, Spacing Scale table, Border Radius table with Concentric Border Radius Rule Outer R = Inner R + Padding, Shadows table, Layout specs)
    - ## Components (Primary Pill Button, Ghost Pill Button, White Pill Button, Feature Card, MetaBrain Card, Product Screenshot Frame, Top Navigation Bar, Aurora Hero Background, Tag/Chip, Stat Counter, Light Section Band, Kanban Board Preview, Inbox/Chat Panel)
    - ## Do's and Don'ts (### Do and ### Don't)
    - ## Surfaces (| Level | Name | Value | Purpose |)
@@ -35,6 +35,7 @@ Rules:
    - ## Gradient System
    - ## Similar Brands (Linear, Vercel, Arc Browser, Resend, Stripe)
    - ## Quick Start (### CSS Custom Properties and ### Tailwind v4)
+   - CRITICAL ANTI-SLOP RULE: ZERO EM-DASHES ( - ) OR EN-DASHES (-) ANYWHERE IN THE DOCUMENT. Use regular hyphens (-), colons (:), or periods. The em-dash is strictly forbidden.
 6. Generate clean CSS Custom Properties (:root { ... }) and Tailwind v4 theme (@theme { ... }).
 7. Construct a standalone React + Tailwind specimen TSX component ("componentCode") rendering live interactive buttons, inputs, cards, and swatches.
 8. Formulate tailored AI prompt rules for Cursor (.cursorrules), Claude (CLAUDE.md), Gemini, and ChatGPT.
@@ -163,7 +164,7 @@ export function deriveSemanticColors(
       role: "background",
       name: isDarkCanvas ? "Obsidian Canvas" : "Linen Canvas",
       hex: bgHex,
-      usage: "Page background, dominant surface — near-black with a whisper of warmth, default stage for all content",
+      usage: "Page background, dominant surface: near-black with a whisper of warmth, default stage for all content",
     },
     {
       role: "deep",
@@ -193,7 +194,7 @@ export function deriveSemanticColors(
       role: "secondary",
       name: "Smoke",
       hex: smokeHex,
-      usage: "Icon strokes, secondary text, and inactive controls — the workhorse mid-gray",
+      usage: "Icon strokes, secondary text, and inactive controls: the workhorse mid-gray",
     },
     {
       role: "tertiary",
@@ -223,13 +224,13 @@ export function deriveSemanticColors(
       role: "primary",
       name: "Electric Iris",
       hex: primaryHex,
-      usage: "Primary action background, active nav indicator, hero aurora cool stop — vivid and switched-on",
+      usage: "Primary action background, active nav indicator, hero cool stop: vivid and switched-on",
     },
     {
       role: "accent",
       name: "Ember Pulse",
       hex: accentHex,
-      usage: "Secondary accent, hero aurora warm stop, notification dot, illustration highlight",
+      usage: "Secondary accent, hero warm stop, notification dot, illustration highlight",
     },
     {
       role: "dark-accent",
@@ -258,11 +259,11 @@ export function formatCssVariables(
   /* Colors */
 ${colorLines}
 
-  /* Typography — Font Families */
+  /* Typography: Font Families */
   --font-${cleanPrimary.toLowerCase()}: '${cleanPrimary}', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: '${monoFont.split(",")[0].replace(/['"]/g, "").trim()}', monospace;
 
-  /* Typography — Scale */
+  /* Typography: Scale */
   --text-caption: 11px;
   --leading-caption: 1.38;
   --tracking-caption: -0.1px;
@@ -287,7 +288,7 @@ ${colorLines}
   --leading-display: 0.9;
   --tracking-display: -4px;
 
-  /* Typography — Weights */
+  /* Typography: Weights */
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -322,6 +323,17 @@ ${colorLines}
   --radius-xl: 12px;
   --radius-3xl: 30px;
   --radius-full: 9999px;
+
+  /* Concentric Border Radius Rule: Outer R = Inner R + Padding */
+  --radius-outer-lg: 24px;
+  --padding-concentric-lg: 8px;
+  --radius-inner-lg: 16px;
+  --radius-outer-md: 18px;
+  --padding-concentric-md: 6px;
+  --radius-inner-md: 12px;
+  --radius-outer-sm: 12px;
+  --padding-concentric-sm: 4px;
+  --radius-inner-sm: 8px;
 
   /* Named Radii */
   --radius-tags: 9999px;
@@ -368,7 +380,7 @@ ${colorThemeLines}
   --font-${cleanPrimary.toLowerCase()}: '${cleanPrimary}', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: '${monoFont.split(",")[0].replace(/['"]/g, "").trim()}', monospace;
 
-  /* Typography — Scale */
+  /* Typography: Scale */
   --text-caption: 11px;
   --leading-caption: 1.38;
   --tracking-caption: -0.1px;
@@ -415,6 +427,14 @@ ${colorThemeLines}
   --radius-3xl: 30px;
   --radius-full: 9999px;
 
+  /* Concentric Border Radius Rule: Outer R = Inner R + Padding */
+  --radius-outer-lg: 24px;
+  --radius-inner-lg: 16px;
+  --radius-outer-md: 18px;
+  --radius-inner-md: 12px;
+  --radius-outer-sm: 12px;
+  --radius-inner-sm: 8px;
+
   /* Shadows */
   --shadow-md: rgba(0, 0, 0, 0.35) 0px 4px 16px 0px;
   --shadow-subtle: rgba(255, 255, 255, 0.4) 0px 0px 0px 6px;
@@ -439,6 +459,12 @@ ${semanticColors.map((c) => `        "${c.name.toLowerCase().replace(/[^a-z0-9]+
         xl: "12px",
         "3xl": "30px",
         full: "9999px",
+        "outer-lg": "24px",
+        "inner-lg": "16px",
+        "outer-md": "18px",
+        "inner-md": "12px",
+        "outer-sm": "12px",
+        "inner-sm": "8px",
       },
     },
   },
@@ -518,7 +544,7 @@ export function buildDesignMd(
   monoFont: string,
   crawledPages: { url: string; title: string; depth: number }[] = []
 ): string {
-  const brandName = title.split("—")[0].split(":")[0].trim();
+  const brandName = title.split(" - ")[0].split("-")[0].split(":")[0].trim();
   const primaryColor = colors.find((c) => c.role === "primary") || colors[0];
   const accentColor = colors.find((c) => c.role === "accent") || colors[1];
   const bg = colors.find((c) => c.role === "background") || colors[0];
@@ -538,42 +564,42 @@ export function buildDesignMd(
   const typeTableRows = typeScale
     .map(
       (t) =>
-        `| ${t.level} | ${t.size} | ${t.lineHeight} | ${t.letterSpacing || "—"} | \`--text-${t.level}\` |`
+        `| ${t.level} | ${t.size} | ${t.lineHeight} | ${t.letterSpacing || "normal"} | \`--text-${t.level}\` |`
     )
     .join("\n");
 
   const cssProperties = formatCssVariables(colors, primaryFont, monoFont);
   const tailwindV4 = formatTailwindConfig(colors, primaryFont, monoFont);
 
-  return `# ${brandName} — Style Reference
+  return `# ${brandName} - Style Reference
 > ${aesthetic}
 
 **Theme:** mixed
 
-${brandName} projects a cosmic-workspace atmosphere: near-black canvas with a single ${primaryColor.name.toLowerCase()} accent slicing through the hero, then a quieter productivity grid below. The system lives in a narrow chromatic band — one electric ${primaryColor.name.toLowerCase()} and one ember ${accentColor.name.toLowerCase()} do all the brand work against layered graphite surfaces, so the dark mode never feels neutral. Typography is ${cleanPrimary} for everything functional, with a custom display face (${cleanHeading}) reserved for hero moments at 80–84px with aggressive negative tracking. Components lean pill-shaped: 9999px radii on controls, 12px on cards, minimal shadow, and glowing gradient strokes as the primary decoration. The page alternates between full-bleed dark spectacle and calm light sections, so any new screen must decide which mode it's in before picking colors.
+${brandName} projects a focused workspace atmosphere: near-black canvas with a single ${primaryColor.name.toLowerCase()} accent slicing through the hero, then a quieter productivity grid below. The system lives in a narrow chromatic band: one ${primaryColor.name.toLowerCase()} and one warm ${accentColor.name.toLowerCase()} do all the brand work against layered graphite surfaces. Typography is ${cleanPrimary} for functional UI, with a display face (${cleanHeading}) reserved for hero moments at 80-84px with tight tracking. Components lean pill-shaped: 9999px radii on controls, 12px on cards, minimal shadow, and hairline borders as primary decoration.
 
-## Tokens — Colors
+## Tokens - Colors
 
 | Name | Value | Token | Role |
 |------|-------|-------|------|
 ${colorTableRows}
 
-## Tokens — Typography
+## Tokens - Typography
 
-### ${cleanPrimary} — All functional UI text — body, nav, buttons, list items, captions, small headings. Used at weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata. · \`--font-${cleanPrimary.toLowerCase()}\`
+### ${cleanPrimary} - All functional UI text: body, nav, buttons, list items, captions, small headings. Used at weight 500-600 for emphasis, 400 for body, 300 sparingly for quiet metadata. · \`--font-${cleanPrimary.toLowerCase()}\`
 - **Substitute:** DM Sans, IBM Plex Sans
 - **Weights:** 300, 400, 500, 600, 700
 - **Sizes:** 10, 11, 12, 14, 15, 16, 18, 22, 24
 - **Line height:** 1.00, 1.13, 1.25, 1.38, 1.50
 - **Letter spacing:** Tight: -0.04em at large sizes, -0.02em at subhead, -0.01em at body, normal at caption
-- **Role:** All functional UI text — body, nav, buttons, list items, captions, small headings. Used at weight 500–600 for emphasis, 400 for body, 300 sparingly for quiet metadata.
+- **Role:** All functional UI text: body, nav, buttons, list items, captions, small headings. Used at weight 500-600 for emphasis, 400 for body, 300 sparingly for quiet metadata.
 
-### ${cleanHeading} — Display-only: hero headlines, section openers, feature titles. The condensed geometry and tight tracking make 84px feel editorial rather than SaaS. Never used below 28px. · \`--font-${cleanHeading.toLowerCase()}\`
+### ${cleanHeading} - Display-only: hero headlines, section openers, feature titles. The condensed geometry and tight tracking make 84px feel editorial rather than SaaS. Never used below 28px. · \`--font-${cleanHeading.toLowerCase()}\`
 - **Substitute:** Sora, General Sans
 - **Weights:** 400, 500, 600
 - **Sizes:** 28, 32, 80, 84
 - **Line height:** 0.80, 0.90, 1.00
-- **Letter spacing:** -0.05em to -0.02em, tightest at 80–84px
+- **Letter spacing:** -0.05em to -0.02em, tightest at 80-84px
 - **Role:** Display-only: hero headlines, section openers, feature titles. The condensed geometry and tight tracking make 84px feel editorial rather than SaaS. Never used below 28px.
 
 ### Type Scale
@@ -582,7 +608,7 @@ ${colorTableRows}
 |------|------|-------------|----------------|-------|
 ${typeTableRows}
 
-## Tokens — Spacing & Shapes
+## Tokens - Spacing & Shapes
 
 **Base unit:** 4px
 
@@ -617,6 +643,15 @@ ${typeTableRows}
 | panels | 30px |
 | buttons | 9999px |
 
+#### Concentric Border Radius Rule (Nested Containers)
+- **Formula:** \`Outer R = Inner R + Padding\` (or \`Inner R = max(0, Outer R - Padding)\`)
+- **Principle:** When nesting rounded containers, the outer border radius MUST equal the inner border radius plus the padding between them. Setting equal radii (\`Outer R = Inner R\`) produces awkward, pinched margins at outer corners.
+- **Concentric Scale Pairs:**
+  - Large: Outer 24px = Inner 16px + Padding 8px (\`--radius-outer-lg\`)
+  - Medium: Outer 18px = Inner 12px + Padding 6px (\`--radius-outer-md\`)
+  - Small: Outer 12px = Inner 8px + Padding 4px (\`--radius-outer-sm\`)
+
+
 ### Shadows
 
 | Name | Value | Token |
@@ -648,22 +683,22 @@ Transparent background, 1px ${border.hex} border on dark surfaces, white text, $
 ### White Pill Button
 **Role:** Light-section CTA, 'See in action' hero button
 
-Solid #ffffff fill with dark text (${voidColor.hex}), 9999px radius, 12px 24px padding. This is the hero — 'SEE IN ACTION →' — and the one place white earns its weight as a foreground, not background.
+Solid #ffffff fill with dark text (${voidColor.hex}), 9999px radius, 12px 24px padding. This is the hero ('SEE IN ACTION ->') and the one place white earns its weight as a foreground, not background.
 
 ### Feature Card
 **Role:** Product capability cards in grids
 
-Dark card on ${surface.hex} or gradient-tinted surface, 12px radius, 24px padding, optional 1px ${border.hex} border. Some variants carry a radial coral-to-amber glow behind the card edge.
+Dark card on ${surface.hex} or gradient-tinted surface, 12px radius, 24px padding, optional 1px ${border.hex} border. Some variants carry a radial glow behind the card edge.
 
 ### MetaBrain Card
 **Role:** Feature highlight in the MetaBrain section
 
-Deep card (${voidColor.hex} base) with 12px radius, 16–20px padding, containing a ${cleanHeading} 32px heading in white. Many carry a soft radial gradient bleed in the corner — warm amber or cool iris — as the visual hook.
+Deep card (${voidColor.hex} base) with 12px radius, 16-20px padding, containing a ${cleanHeading} 32px heading in white. Many carry a soft radial gradient bleed in the corner (warm amber or cool iris) as the visual hook.
 
 ### Product Screenshot Frame
 **Role:** In-app UI previews in the hero and feature sections
 
-Dark UI surface (matching the real product) wrapped in a 12px radius frame with a soft black shadow (rgba(0,0,0,0.5) 0 6px 25px). Floats above the aurora background as the hero's evidence.
+Dark UI surface (matching the real product) wrapped in a 12px radius frame with a soft black shadow (rgba(0,0,0,0.5) 0 6px 25px). Floats above the background as evidence.
 
 ### Top Navigation Bar
 **Role:** Site-wide header
@@ -703,21 +738,23 @@ Dark panel with avatar circles, 12px radius, user names in ${cleanPrimary} 14px 
 ## Do's and Don'ts
 
 ### Do
-- Use 9999px radius for all buttons, tags, and pill controls — pill geometry is the system's signature shape
+- Use 9999px radius for all buttons, tags, and pill controls: pill geometry is the system's signature shape
+- Maintain concentric border radius on nested containers: Outer R = Inner R + Padding (Inner R = max(0, Outer R - Padding)) to preserve parallel, balanced margins at rounded corners
 - Reserve ${cleanHeading} for display moments (28px and up); never use it for body, nav, or anything below 22px
-- Pick a background mode first: dark (${bg.hex} canvas) for product-heavy screens, white (#ffffff) for editorial sections — never blend them in one component
+- Pick a background mode first: dark (${bg.hex} canvas) for product-heavy screens, white (#ffffff) for editorial sections: never blend them in one component
 - Use ${primaryColor.name} (${primaryColor.hex}) for the single most important action per screen; let ${accentColor.name} (${accentColor.hex}) appear as warm punctuation in tags, dots, and gradient stops
-- Apply the aurora gradient (${primaryColor.name.toLowerCase()} → ${accentColor.name.toLowerCase()} → white) as a narrow vertical or radial beam, never as a full background fill
+- Apply the aurora gradient (${primaryColor.name.toLowerCase()} -> ${accentColor.name.toLowerCase()} -> white) as a narrow vertical or radial beam, never as a full background fill
 - Set body text to 14px / line-height 1.5 / -0.14px tracking, and increase tracking compression proportionally with size (to -4px at 80px display)
 - Stack dark and light sections as alternating bands with 96px vertical gaps to create the page's signature rhythm
 
 ### Don't
-- Don't use sharp corners (0–8px) on buttons or tags — the system is pill-first
+- Don't use sharp corners (0-8px) on buttons or tags: the system is pill-first
+- Don't set Outer R = Inner R on nested containers with padding: this violates concentric geometry and produces pinched, uneven corner margins
 - Don't pair ${cleanPrimary} display weights with custom display faces; they fight each other at large sizes
-- Don't apply the aurora gradient as a full-surface background — it loses its impact when it covers everything
+- Don't apply the aurora gradient as a full-surface background: it loses its impact when it covers everything
 - Don't introduce a third accent color; the ${primaryColor.name.toLowerCase()}/${accentColor.name.toLowerCase()} pair is the entire chromatic vocabulary
-- Don't use shadows for elevation on dark cards — the system prefers borders (${border.hex}) and color contrast over drop shadows
-- Don't use ${cleanHeading} below 28px or in body copy — tight tracking crushes readability at small sizes
+- Don't use shadows for elevation on dark cards: the system prefers borders (${border.hex}) and color contrast over drop shadows
+- Don't use ${cleanHeading} below 28px or in body copy: tight tracking crushes readability at small sizes
 - Don't put white text on a white section, or low contrast text on the dark canvas without checking contrast
 
 ## Surfaces
@@ -739,11 +776,11 @@ Dark panel with avatar circles, 12px radius, user names in ${cleanPrimary} 14px 
 
 ## Imagery
 
-Hero is pure aurora gradient — no photography. All feature illustrations are real product UI screenshots (dark-mode kanban, inbox, calendar) wrapped in card frames, functioning as both evidence and decoration. No lifestyle photography, no stock imagery, no 3D renders. The only non-UI visual element is the warm radial sunburst glow at the base of the aurora, painted as a CSS gradient. Icons are monochrome line icons in muted gray or white, never multicolor. The system treats its own dark UI as the hero asset — the product is the photography.
+Hero is focused gradient, no stock photography. All feature illustrations are real product UI screenshots (dark-mode kanban, inbox, calendar) wrapped in card frames, functioning as both evidence and decoration. No lifestyle photography, no stock imagery, no 3D renders. Icons are monochrome line icons in muted gray or white, never multicolor. The system treats its own dark UI as the hero asset: the product is the photography.
 
 ## Layout
 
-Full-bleed hero with a vertical aurora beam and headline left-aligned, product screenshot floating bottom-right. Below the hero, a max-width 1200px content area alternates dark and light bands. Each section is a single vertical block: heading + 3-column or 4-column card grid, separated by 96px gaps. The 'MetaBrain' section breaks the grid with a centered display heading and a mixed-size card mosaic (large featured card + smaller supporting cards). The page is content-dense by SaaS standards but uses the dark/light band alternation to give each section room to breathe. Navigation is a single transparent top bar that becomes opaque on scroll.
+Full-bleed hero with a focused accent beam and headline left-aligned, product preview floating bottom-right. Below the hero, a max-width 1200px content area alternates dark and light bands. Each section is a single vertical block: heading + 3-column or 4-column card grid, separated by 96px gaps. The 'MetaBrain' section breaks the grid with a centered display heading and a mixed-size card mosaic (large featured card + smaller supporting cards). The page is content-dense by SaaS standards but uses the dark/light band alternation to give each section room to breathe. Navigation is a single transparent top bar that becomes opaque on scroll.
 
 ## Agent Prompt Guide
 
@@ -766,7 +803,7 @@ Create a Primary Action Button: ${primaryColor.hex} background, #ffffff text, 99
 
 2. **Feature card grid**: 4-column grid on white (#ffffff) section. Each card: ${surface.hex} background, 12px radius, 24px padding, 1px ${border.hex} border. Card heading: ${cleanHeading} 28px weight 500, #ffffff. Card body: ${cleanPrimary} 14px weight 400, muted gray. Optional radial gradient bleed in corner (rgba(255,137,100,0.15) fading to transparent).
 
-3. **Product screenshot frame**: In-app dark UI screenshot wrapped in a 12px-radius container with shadow rgba(0,0,0,0.5) 0 6px 25px. Floats over the aurora background at the bottom of the hero.
+3. **Product screenshot frame**: In-app dark UI screenshot wrapped in a 12px-radius container with shadow rgba(0,0,0,0.5) 0 6px 25px. Floats over the background at the bottom of the hero.
 
 4. **Tag chip**: 9999px radius, 4px 10px padding, ${cleanPrimary} 11px weight 500. Background: category color at 12% opacity. Text: category color at full saturation.
 
@@ -776,21 +813,21 @@ Create a Primary Action Button: ${primaryColor.hex} background, #ffffff text, 99
 
 Two gradient families serve distinct purposes:
 
-**Aurora beam** (hero only): linear-gradient(180deg, ${primaryColor.name} → ${accentColor.name} → white) painted as a narrow vertical streak, 15–25% page width. This is the brand's signature visual — it should appear once per page, not repeated.
+**Accent beam** (hero only): linear-gradient(180deg, ${primaryColor.name} -> ${accentColor.name} -> white) painted as a narrow streak, 15-25% page width. This is the brand's signature visual: it should appear once per page, not repeated.
 
-**Radial sunburst** (feature card glows): radial-gradient from warm amber through soft yellow to transparent. Painted as a 200–400px circle bleeding from a card corner, at 30–50% opacity. Provides warmth without competing with the hero aurora.
+**Radial glow** (feature card glows): radial-gradient from warm amber through soft yellow to transparent. Painted as a 200-400px circle bleeding from a card corner, at 30-50% opacity.
 
-**Section transitions** (rare): linear-gradient from white to soft violet-tint for section bridges.
+**Section transitions** (rare): linear-gradient from white to soft tint for section bridges.
 
 Never stack two full-opacity gradients in the same viewport.
 
 ## Similar Brands
 
-- **Linear** — Same dark-canvas productivity app aesthetic with a single vivid accent, pill-shaped controls, and product-UI-as-hero photography
-- **Vercel** — Same dramatic gradient hero treatment (vertical beam on near-black) and display-headline-at-80px approach with tight letter-spacing
-- **Arc Browser** — Same dark-mode-first product UI with warm-to-cool gradient washes and pill geometry on controls
-- **Resend** — Same alternating dark/light section rhythm, minimal shadow approach, and 9999px button radii as a brand signature
-- **Stripe** — Same use of gradient hero beams and product screenshots floating over atmospheric backgrounds, with ${cleanPrimary} as the workhorse UI face
+- **Linear**: Same dark-canvas productivity app aesthetic with a single vivid accent, pill-shaped controls, and product-UI-as-hero photography
+- **Vercel**: Same dramatic gradient hero treatment (vertical beam on near-black) and display-headline-at-80px approach with tight letter-spacing
+- **Arc Browser**: Same dark-mode-first product UI with warm-to-cool gradient washes and pill geometry on controls
+- **Resend**: Same alternating dark/light section rhythm, minimal shadow approach, and 9999px button radii as a brand signature
+- **Stripe**: Same use of gradient hero beams and product screenshots floating over atmospheric backgrounds, with ${cleanPrimary} as the workhorse UI face
 
 ## Quick Start
 
@@ -818,7 +855,7 @@ export function buildSpecimenComponent(
   primaryFont: string,
   monoFont: string
 ): string {
-  const brandName = title.split("—")[0].split(":")[0].trim();
+  const brandName = title.split(" - ")[0].split("-")[0].split(":")[0].trim();
   const primaryColor = colors.find((c) => c.role === "primary") || colors[0];
   const accentColor = colors.find((c) => c.role === "accent") || colors[1];
   const bg = colors.find((c) => c.role === "background") || colors[0];
@@ -850,7 +887,7 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[${border.hex}]">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>${brandName} — Style Specimens</span>
+            <span>${brandName} - Style Specimens</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[${primaryColor.hex}]/20 text-[${primaryColor.hex}] border border-[${primaryColor.hex}]/40">
               Style Reference
             </span>
@@ -956,21 +993,21 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
         </div>
       )}
 
-      {/* Tab 3: Cards Specimen (Inspo Image 2) */}
+      {/* Tab 3: Cards Specimen (Concentric Radii) */}
       {activeTab === "cards" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Autonomous Agent Execution Cards (Inspo 2)
+              Autonomous Agent Workspaces (Concentric: Outer R = Inner R + Padding)
             </h3>
-            <span className="text-[11px] font-mono text-zinc-500">Live styled with extracted tokens</span>
+            <span className="text-[11px] font-mono text-zinc-500">Outer 20px = Inner 8px + Padding 12px</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Cursor Agent Card */}
             <div
               style={{ backgroundColor: "${surface.hex}", borderColor: "${border.hex}" }}
-              className="rounded-2xl border p-4.5 sm:p-5 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
+              className="rounded-[20px] border p-3 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
             >
               <div className="flex items-center justify-between border-b border-[#191d20]/80 pb-3">
                 <div className="flex items-center gap-2">
@@ -982,13 +1019,13 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
                   <span className="text-[13px] font-medium text-white tracking-[-0.01em]">Cursor</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-zinc-500 text-xs font-mono">
-                  <span>—</span>
+                  <span>-</span>
                   <span>⤢</span>
                   <span>✕</span>
                 </div>
               </div>
 
-              <div className="bg-[#121417] border border-[#1e2126] rounded-xl p-3.5 space-y-2.5 shadow-inner">
+              <div className="bg-[#121417] border border-[#1e2126] rounded-[8px] p-3.5 space-y-2.5 shadow-inner">
                 <p className="text-[13px] text-white/95 leading-relaxed font-normal">
                   add retry handling for failed image uploads described in this issue
                 </p>
@@ -1015,7 +1052,7 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
                 </p>
               </div>
 
-              <div className="bg-[#101215] border border-[#1b1e23] rounded-lg px-3 py-2 flex items-center justify-between text-xs text-zinc-400">
+              <div className="bg-[#101215] border border-[#1b1e23] rounded-[8px] px-3 py-2 flex items-center justify-between text-xs text-zinc-400">
                 <div className="flex items-center gap-2">
                   <span className="text-zinc-500 tracking-widest text-[11px]">⠿</span>
                   <span className="text-[12px] text-zinc-300">Setting up DRV/rideshare-app...</span>
@@ -1027,7 +1064,7 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
             {/* ${brandName} Opus 5 Agent Card */}
             <div
               style={{ backgroundColor: "${surface.hex}", borderColor: "${border.hex}" }}
-              className="rounded-2xl border p-4.5 sm:p-5 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
+              className="rounded-[20px] border p-3 flex flex-col justify-between space-y-4 text-left shadow-2xl relative overflow-hidden group hover:border-[#3c4048] transition-all"
             >
               <div className="flex items-center justify-between border-b border-[#191d20]/80 pb-3">
                 <div className="flex items-center gap-2">
@@ -1040,13 +1077,13 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5 text-zinc-500 text-xs font-mono">
-                  <span>—</span>
+                  <span>-</span>
                   <span>⤢</span>
                   <span>✕</span>
                 </div>
               </div>
 
-              <div className="bg-[#121417] border border-[#1e2126] rounded-xl p-3.5 space-y-2.5 shadow-inner">
+              <div className="bg-[#121417] border border-[#1e2126] rounded-[8px] p-3.5 space-y-2.5 shadow-inner">
                 <p className="text-[13px] text-white/95 leading-relaxed font-normal">
                   Fix the dimmed ride rows that never reset and open a PR
                 </p>
@@ -1065,7 +1102,7 @@ export default function ${brandName.replace(/[^a-zA-Z0-9]/g, "")}Specimens() {
                   <span className="text-[10px]">▶</span>
                 </div>
                 <p className="text-[12px] text-zinc-300 leading-relaxed">
-                  Pushed and opened a draft PR. Removed dimmedIds — isItemDimmed now checks waitingStatusById directly.
+                  Pushed and opened a draft PR. Removed dimmedIds: isItemDimmed now checks waitingStatusById directly.
                 </p>
               </div>
 
@@ -1233,10 +1270,10 @@ export function heuristicSynthesizeDesignSystem(scrapeResult: ScrapeResult): Des
 
   const typeScale: TypographyScaleItem[] = [
     { level: "caption", size: "11px", lineHeight: "1.38", weight: "400", letterSpacing: "-0.1px", sample: "Metadata, tags & badges" },
-    { level: "body", size: "14px", lineHeight: "1.5", weight: "400", letterSpacing: "-0.14px", sample: "All functional UI text — body, nav, buttons, list items, captions" },
+    { level: "body", size: "14px", lineHeight: "1.5", weight: "400", letterSpacing: "-0.14px", sample: "All functional UI text: body, nav, buttons, list items, captions" },
     { level: "body-lg", size: "16px", lineHeight: "1.5", weight: "500", letterSpacing: "-0.16px", sample: "Lead descriptions & prominent subheads" },
     { level: "subheading", size: "18px", lineHeight: "1.5", weight: "600", letterSpacing: "-0.36px", sample: "Section openers and panel headers" },
-    { level: "heading-sm", size: "22px", lineHeight: "1.25", weight: "600", letterSpacing: "—", sample: "Card titles & component groups" },
+    { level: "heading-sm", size: "22px", lineHeight: "1.25", weight: "600", letterSpacing: "normal", sample: "Card titles & component groups" },
     { level: "heading", size: "24px", lineHeight: "1.25", weight: "600", letterSpacing: "-0.48px", sample: "Section Headings & Milestones" },
     { level: "display-sm", size: "32px", lineHeight: "1.0", weight: "600", letterSpacing: "-1.6px", sample: "Key Feature Titles" },
     { level: "display", size: "80px", lineHeight: "0.9", weight: "700", letterSpacing: "-4px", sample: title },
@@ -1292,7 +1329,7 @@ export function heuristicSynthesizeDesignSystem(scrapeResult: ScrapeResult): Des
     headingFont,
     monoFont,
     spacingScale: ["4px", "8px", "12px", "16px", "20px", "24px", "28px", "32px", "36px", "40px", "64px", "160px", "180px", "240px"],
-    radiiScale: ["4px", "12px", "30px", "9999px"],
+    radiiScale: ["4px", "8px", "12px", "16px", "18px", "24px", "30px", "9999px"],
     shadowScale: [
       "rgba(0, 0, 0, 0.15) 0px 4px 6px 0px",
       "rgba(0, 0, 0, 0.35) 0px 4px 16px 0px",

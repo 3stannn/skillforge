@@ -49,7 +49,7 @@ const SAMPLE_URLS = [
   },
 ];
 
-export function UrlInputForm({
+export const UrlInputForm = React.memo(function UrlInputForm({
   onSubmit,
   isLoading,
   onLoadExample,
@@ -130,11 +130,11 @@ export function UrlInputForm({
         </h1>
 
         <p className="text-sm sm:text-base md:text-lg text-[#8a8f98] font-normal max-w-2xl leading-relaxed">
-          Purpose-built for exploring and building products. Designed for the AI era — extract the design system behind <span className="text-white font-medium">any</span> website into a structured <code className="text-white font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/10">DESIGN.md</code>.
+          Purpose-built for exploring and building products. Designed for the AI era: extract the design system behind <span className="text-white font-medium">any</span> website into a structured <code className="text-white font-mono bg-white/5 px-1.5 py-0.5 rounded border border-white/10">DESIGN.md</code>.
         </p>
 
         {/* Expected Output Reference Banner (.agents/DESIGN.md) */}
-        {onLoadExample && (
+        {onLoadExample ? (
           <div className="pt-1">
             <button
               type="button"
@@ -146,7 +146,7 @@ export function UrlInputForm({
               <ArrowRight className="w-3.5 h-3.5 text-[#8a8f98] group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Main Search & Mode Container */}
@@ -210,19 +210,19 @@ export function UrlInputForm({
         </div>
 
         {/* Mode Hint */}
-        {crawlMode === "deep" && (
+        {crawlMode === "deep" ? (
           <p className="text-[11px] text-[#5f6368] text-center font-mono">
             Explores key sub-routes (/docs, /components, /pricing) and external stylesheets for exact tokens.
           </p>
-        )}
+        ) : null}
 
         {/* Validation Error Banner */}
-        {validationError && (
+        {validationError ? (
           <div className="flex items-center gap-2 text-xs text-rose-200 bg-rose-950/40 border border-rose-800/60 p-3 rounded-xl max-w-2xl mx-auto">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{validationError}</span>
           </div>
-        )}
+        ) : null}
 
         {/* Sample Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs text-[#9aa0a6]">
@@ -248,6 +248,6 @@ export function UrlInputForm({
       </form>
     </div>
   );
-}
+});
 
 export default UrlInputForm;

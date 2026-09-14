@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ProductWorkspaceShell } from "@/components/ProductWorkspaceShell";
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { SplashScreen } from "@/components/SplashScreen";
 import {
   ApiKeysConfig,
@@ -9,15 +9,37 @@ import {
   GenerationStepUpdate,
 } from "@/lib/types";
 
+const ProductWorkspaceShell = dynamic(
+  () => import("@/components/ProductWorkspaceShell").then((m) => m.ProductWorkspaceShell),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#090a0d] text-xs font-mono text-[#8a8f98]">
+        Loading workspace...
+      </div>
+    ),
+  }
+);
+
 export default function Home() {
-  const [config, setConfig] = useState<ApiKeysConfig>({
-    groqApiKey: "",
-    geminiApiKey: "",
-    firecrawlApiKey: "",
-    preferredLlm: "auto",
+  const [config, setConfig] = useState<ApiKeysConfig>(() => {
+    const defaults: ApiKeysConfig = {
+      groqApiKey: "",
+      geminiApiKey: "",
+      firecrawlApiKey: "",
+      preferredLlm: "auto",
+    };
+    if (typeof window === "undefined") return defaults;
+    try {
+      const saved = localStorage.getItem("designmd_config");
+      if (saved) {
+        return { ...defaults, ...JSON.parse(saved) };
+      }
+    } catch {}
+    return defaults;
   });
 
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   // Generation Pipeline State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -29,23 +51,12 @@ export default function Home() {
   // Active Skill in Results Workspace
   const [activeSkill, setActiveSkill] = useState<UniversalSkill | null>(null);
 
-  useEffect(() => {
-    // Load persisted settings on mount
-    try {
-      const saved = localStorage.getItem("designmd_config");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setConfig((prev) => ({ ...prev, ...parsed }));
-      }
-    } catch {}
-  }, []);
-
   const handleDismissSplash = () => {
     setShowSplash(false);
   };
 
   const saveConfig = (updated: ApiKeysConfig) => {
-    setConfig(updated);
+    setConfig((prev) => ({ ...prev, ...updated }));
     try {
       localStorage.setItem("designmd_config", JSON.stringify(updated));
     } catch {}
@@ -142,7 +153,7 @@ export default function Home() {
   return (
     <>
       {/* Optional Splash Screen */}
-      {showSplash && (
+      {showSplash ? (
         <SplashScreen
           onDismiss={handleDismissSplash}
           onLoadExample={(example) => {
@@ -151,7 +162,7 @@ export default function Home() {
             setShowSplash(false);
           }}
         />
-      )}
+      ) : null}
 
       {/* Main Product UI Shell (Image 3) */}
       <ProductWorkspaceShell

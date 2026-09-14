@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Copy, Check, Palette, Cpu, Download, Eye, Code, Compass, ExternalLink, Code2 } from "lucide-react";
 import { UniversalSkill } from "@/lib/types";
 import { MarkdownView } from "./MarkdownView";
@@ -13,11 +13,21 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
   const [activeTab, setActiveTab] = useState<"formatted" | "raw" | "styles" | "logic" | "pages">("formatted");
   const [copied, setCopied] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const colorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (colorTimeoutRef.current) clearTimeout(colorTimeoutRef.current);
+    };
+  }, []);
 
   const handleCopySkillMd = () => {
     navigator.clipboard.writeText(skill.skillMd);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   const handleDownloadSkillMd = () => {
@@ -33,7 +43,8 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
   const copyColor = (color: string) => {
     navigator.clipboard.writeText(color);
     setCopiedColor(color);
-    setTimeout(() => setCopiedColor(null), 1200);
+    if (colorTimeoutRef.current) clearTimeout(colorTimeoutRef.current);
+    colorTimeoutRef.current = setTimeout(() => setCopiedColor(null), 1200);
   };
 
   return (
@@ -89,7 +100,7 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
             <Cpu className="w-3.5 h-3.5 text-[#34A853]" />
             <span>Logic ({skill.logic.stateVariables.length})</span>
           </button>
-          {skill.crawledPages && skill.crawledPages.length > 1 && (
+          {skill.crawledPages && skill.crawledPages.length > 1 ? (
             <button
               type="button"
               onClick={() => setActiveTab("pages")}
@@ -102,7 +113,7 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
               <Compass className="w-3.5 h-3.5 text-[#3186ff]" />
               <span>Pages ({skill.crawledPages.length})</span>
             </button>
-          )}
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -137,21 +148,21 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
       {/* Content Area */}
       <div className="relative flex-1 overflow-y-auto bg-[#0a0b0e] p-5 sm:p-6">
         {/* Formatted Markdown View */}
-        {activeTab === "formatted" && (
+        {activeTab === "formatted" ? (
           <div className="max-w-none">
             <MarkdownView content={skill.skillMd} />
           </div>
-        )}
+        ) : null}
 
         {/* Raw Markdown */}
-        {activeTab === "raw" && (
+        {activeTab === "raw" ? (
           <div className="rounded-xl overflow-hidden border border-[#2b2c31] bg-[#121316] p-4 font-mono text-xs text-[#dcdfe4] leading-relaxed select-text">
             <pre className="whitespace-pre-wrap">{skill.skillMd}</pre>
           </div>
-        )}
+        ) : null}
 
         {/* Extracted Styles */}
-        {activeTab === "styles" && (
+        {activeTab === "styles" ? (
           <div className="space-y-6">
             {/* Color Palette */}
             <div className="space-y-2.5">
@@ -194,7 +205,7 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
             </div>
 
             {/* Detected Fonts */}
-            {skill.styles.fonts.length > 0 && (
+            {skill.styles.fonts.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Detected Fonts
@@ -210,10 +221,10 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Layout Patterns */}
-            {skill.styles.layoutPatterns.length > 0 && (
+            {skill.styles.layoutPatterns.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Layout Architecture Patterns
@@ -229,10 +240,10 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Key Tailwind Utility Classes */}
-            {skill.styles.tailwindClasses.length > 0 && (
+            {skill.styles.tailwindClasses.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Key Tailwind Utility Classes ({skill.styles.tailwindClasses.length})
@@ -248,12 +259,12 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
 
         {/* Extracted Logic */}
-        {activeTab === "logic" && (
+        {activeTab === "logic" ? (
           <div className="space-y-6">
             <div className="space-y-2">
               <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6] flex items-center gap-1.5">
@@ -272,7 +283,7 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
               </div>
             </div>
 
-            {skill.logic.eventHandlers.length > 0 && (
+            {skill.logic.eventHandlers.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Event Handlers & Interactivity Flows
@@ -288,9 +299,9 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {skill.logic.apiEndpoints.length > 0 && (
+            {skill.logic.apiEndpoints.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Connected API Endpoints ({skill.logic.apiEndpoints.length})
@@ -306,9 +317,9 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {skill.languages && skill.languages.length > 0 && (
+            {skill.languages && skill.languages.length > 0 ? (
               <div className="space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6] flex items-center gap-1.5">
                   <Code2 className="w-3.5 h-3.5 text-[#ffe432]" />
@@ -325,12 +336,12 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
 
         {/* Pages & Architecture Tab */}
-        {activeTab === "pages" && skill.crawledPages && (
+        {activeTab === "pages" && skill.crawledPages ? (
           <div className="p-6 space-y-6 max-w-4xl mx-auto">
             <div className="space-y-1">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -369,17 +380,17 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
 
                   <div className="flex items-center gap-3 shrink-0 text-xs font-mono text-[#9aa0a6]">
                     <span>{page.wordCount.toLocaleString()} words</span>
-                    {page.statusCode && (
+                    {page.statusCode ? (
                       <span className="px-2 py-0.5 rounded bg-[#16181d] border border-[#262930] text-[10px] text-emerald-400">
                         HTTP {page.statusCode}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}
             </div>
 
-            {skill.frameworks && skill.frameworks.length > 0 && (
+            {skill.frameworks && skill.frameworks.length > 0 ? (
               <div className="pt-4 border-t border-[#262930] space-y-2">
                 <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#9aa0a6]">
                   Detected Frameworks & Tech Stack
@@ -395,9 +406,9 @@ export function SkillMdViewer({ skill }: SkillMdViewerProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Footer */}

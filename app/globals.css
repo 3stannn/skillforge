@@ -3,20 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 100%;
-  --card: 0 0% 4%;
-  --card-foreground: 0 0% 100%;
-  --popover: 0 0% 4%;
-  --popover-foreground: 0 0% 100%;
-  --primary: 217 90% 50%;
+  --background: 220 15% 4%;
+  --foreground: 0 0% 98%;
+  --card: 220 14% 6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 220 14% 6%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 217 90% 56%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 10%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 220 14% 10%;
+  --secondary: 220 14% 11%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 220 14% 11%;
   --muted-foreground: 215 16% 65%;
-  --accent: 52 100% 60%;
-  --accent-foreground: 0 0% 0%;
+  --accent: 217 90% 56%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --border: 220 13% 16%;
@@ -24,37 +24,57 @@
   --ring: 217 90% 61%;
   --radius: 0.75rem;
 
-  /* Google Antigravity Design System Tokens (from antigravity_skill) */
-  --antigravity-bg: #000000;
-  --antigravity-surface: #0a0b0e;
-  --antigravity-surface-elevated: #121316;
-  --antigravity-border: #262930;
-  --antigravity-border-hover: #3c4043;
-  --antigravity-gray: #45474d;
-  --antigravity-light: #eff0f3;
-  --antigravity-blue: #1a73e8;
-  --antigravity-blue-hover: #1557b0;
-  --antigravity-blue-light: #3186ff;
-  --antigravity-yellow: #ffe432;
-  --antigravity-text-primary: #ffffff;
-  --antigravity-text-secondary: #9aa0a6;
-  --antigravity-text-muted: #5f6368;
+  /* SkillForge / DesignMD System Tokens */
+  --canvas-bg: #090a0d;
+  --surface-base: #0f1116;
+  --surface-elevated: #161820;
+  --surface-hover: #1e212b;
+  --border-subtle: #20242f;
+  --border-strong: #2c3241;
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #2563eb;
+  --text-high: #f4f5f8;
+  --text-medium: #9ba1b0;
+  --text-muted: #5e6473;
+
+  /* =========================================================================
+     CONCENTRIC BORDER RADIUS RULE: Outer R = Inner R + Padding
+     Formula: Inner R = max(0, Outer R - Padding)
+     Enforces mathematically concentric corner curves across nested surfaces.
+     ========================================================================= */
+  --radius-outer-lg: 24px;
+  --padding-concentric-lg: 8px;
+  --radius-inner-lg: calc(var(--radius-outer-lg) - var(--padding-concentric-lg)); /* 16px */
+
+  --radius-outer-md: 18px;
+  --padding-concentric-md: 6px;
+  --radius-inner-md: calc(var(--radius-outer-md) - var(--padding-concentric-md)); /* 12px */
+
+  --radius-outer-sm: 12px;
+  --padding-concentric-sm: 4px;
+  --radius-inner-sm: calc(var(--radius-outer-sm) - var(--padding-concentric-sm)); /* 8px */
+}
+
+@layer base {
+  *, ::before, ::after {
+    border-color: var(--border-subtle);
+  }
 }
 
 body {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: var(--canvas-bg);
+  color: var(--text-high);
   font-family: 'Google Sans Flex', 'Google Sans Text', 'Google Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle Antigravity Grid Background Pattern */
+/* Subtle Grid Background Pattern */
 .grid-container {
   background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
 /* Antigravity Cursor Blink Animation */
@@ -67,26 +87,35 @@ body {
   animation: blink 1s step-end infinite;
 }
 
-/* Antigravity Dark Minimalist Scrollbars */
+/* Dark Minimalist Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--canvas-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #262930;
+  background: #20242f;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #45474d;
+  background: #3c4252;
 }
 
-/* Subtle border utility */
-.antigravity-border {
-  border-color: #262930;
+/* Strict Reduced Motion Guard (SKILL.md Section 6.B) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cursor-blink {
+    animation: none;
+    opacity: 1;
+  }
 }

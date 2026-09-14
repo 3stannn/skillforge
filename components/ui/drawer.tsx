@@ -11,6 +11,12 @@ export interface DrawerProps {
   width?: "sm" | "md" | "lg";
 }
 
+const WIDTH_CLASSES = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+};
+
 export function Drawer({
   isOpen,
   onClose,
@@ -32,12 +38,6 @@ export function Drawer({
 
   if (!isOpen) return null;
 
-  const widthClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in"
@@ -52,14 +52,14 @@ export function Drawer({
       >
         <div
           style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-          className={`w-screen ${widthClasses[width]} bg-[#0a0b0e] border-l border-[#262930] p-6 shadow-2xl flex flex-col text-white`}
+          className={`w-screen ${WIDTH_CLASSES[width]} bg-[#0a0b0e] border-l border-[#262930] p-6 shadow-2xl flex flex-col text-white`}
         >
           <div className="flex items-center justify-between pb-4 border-b border-[#262930]">
             <div>
               <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
-              {description && (
+              {description ? (
                 <p className="text-xs text-[#9aa0a6] mt-0.5">{description}</p>
-              )}
+              ) : null}
             </div>
             <button
               onClick={onClose}

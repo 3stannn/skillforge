@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Dialog } from "./ui/dialog";
 import { Copy, Check, Download, Sparkles, Terminal, Bot, Cpu } from "lucide-react";
 import { DesignSystemData } from "@/lib/types";
@@ -12,7 +12,7 @@ export interface ModelExportModalProps {
   onDownloadZip: () => void;
 }
 
-export function ModelExportModal({
+export const ModelExportModal = React.memo(function ModelExportModal({
   isOpen,
   onClose,
   skill,
@@ -20,6 +20,13 @@ export function ModelExportModal({
 }: ModelExportModalProps) {
   const [activeModel, setActiveModel] = useState<"cursor" | "claude" | "gemini" | "chatgpt">("cursor");
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   const modelOptions = [
     { id: "cursor", name: "Cursor & Windsurf", icon: Terminal, color: "text-[#3186ff]" },
@@ -28,19 +35,15 @@ export function ModelExportModal({
     { id: "chatgpt", name: "ChatGPT / OpenAI", icon: Bot, color: "text-[#188038]" },
   ] as const;
 
-  const currentPrompt =
-    activeModel === "gemini"
-      ? skill.modelPrompts.gemini
-      : activeModel === "cursor"
-      ? skill.modelPrompts.cursor
-      : activeModel === "chatgpt"
-      ? skill.modelPrompts.chatgpt
-      : skill.modelPrompts.claude;
+  const currentPrompt = useMemo(() => {
+    return skill.modelPrompts[activeModel] || "";
+  }, [skill.modelPrompts, activeModel]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(currentPrompt);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   return (
@@ -80,29 +83,29 @@ export function ModelExportModal({
 
         {/* Model Instructions Banner */}
         <div className="p-3 bg-[#121316] rounded-xl border border-[#262930] text-xs text-[#9aa0a6] font-mono leading-relaxed">
-          {activeModel === "cursor" && (
+          {activeModel === "cursor" ? (
             <p>
               <strong className="text-white">Cursor & Windsurf:</strong> Save as{" "}
               <code className="text-[#3186ff] font-bold">.cursorrules</code> in your project root alongside{" "}
               <code className="text-white font-bold">DESIGN.md</code>.
             </p>
-          )}
-          {activeModel === "claude" && (
+          ) : null}
+          {activeModel === "claude" ? (
             <p>
               <strong className="text-white">Claude Code:</strong> Save as{" "}
               <code className="text-[#d97706] font-bold">CLAUDE.md</code> in your project root, or add to Claude Project Knowledge.
             </p>
-          )}
-          {activeModel === "gemini" && (
+          ) : null}
+          {activeModel === "gemini" ? (
             <p>
               <strong className="text-white">Google Gemini:</strong> Paste into Google AI Studio (System Instructions) or Gemini API system instructions.
             </p>
-          )}
-          {activeModel === "chatgpt" && (
+          ) : null}
+          {activeModel === "chatgpt" ? (
             <p>
               <strong className="text-white">ChatGPT / OpenAI:</strong> Paste into the Custom GPT &quot;Instructions&quot; field.
             </p>
-          )}
+          ) : null}
         </div>
 
         {/* Prompt Box */}
@@ -152,6 +155,6 @@ export function ModelExportModal({
       </div>
     </Dialog>
   );
-}
+});
 
 export default ModelExportModal;

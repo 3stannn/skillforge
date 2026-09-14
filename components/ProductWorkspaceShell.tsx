@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import {
   Search,
   Plus,
@@ -39,12 +40,64 @@ import {
   SAMPLE_SYSTEMS_LIST,
 } from "@/lib/exampleDesignSystem";
 import { TerminalExtractor } from "./TerminalExtractor";
-import { DesignMdViewer } from "./DesignMdViewer";
-import { LiveSpecimenViewer } from "./LiveSpecimenViewer";
-import { SystemAuditsView } from "./SystemAuditsView";
-import { SystemPulseView } from "./SystemPulseView";
-import { ModelExportModal } from "./ModelExportModal";
-import { ConfigDrawer } from "./ConfigDrawer";
+
+const DesignMdViewer = dynamic(
+  () => import("./DesignMdViewer").then((m) => m.DesignMdViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-8 text-center text-xs font-mono text-[#8a8f98]">
+        Loading specification viewer...
+      </div>
+    ),
+  }
+);
+
+const LiveSpecimenViewer = dynamic(
+  () => import("./LiveSpecimenViewer").then((m) => m.LiveSpecimenViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-8 text-center text-xs font-mono text-[#8a8f98]">
+        Loading interactive specimens...
+      </div>
+    ),
+  }
+);
+
+const SystemAuditsView = dynamic(
+  () => import("./SystemAuditsView").then((m) => m.SystemAuditsView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-8 text-center text-xs font-mono text-[#8a8f98]">
+        Loading audit matrix...
+      </div>
+    ),
+  }
+);
+
+const SystemPulseView = dynamic(
+  () => import("./SystemPulseView").then((m) => m.SystemPulseView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-8 text-center text-xs font-mono text-[#8a8f98]">
+        Loading system telemetry...
+      </div>
+    ),
+  }
+);
+
+const ModelExportModal = dynamic(
+  () => import("./ModelExportModal").then((m) => m.ModelExportModal),
+  { ssr: false }
+);
+
+const ConfigDrawer = dynamic(
+  () => import("./ConfigDrawer").then((m) => m.ConfigDrawer),
+  { ssr: false }
+);
 
 export interface ProductWorkspaceShellProps {
   onGenerate: (url: string, options?: { crawlDepth: number; maxPages: number }) => void;
@@ -121,18 +174,40 @@ export function ProductWorkspaceShell({
   const currentDesign: DesignSystemData | null =
     customDesign || (activeSystemId ? EXAMPLE_SYSTEMS_MAP[activeSystemId] : null);
 
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = (msg: string) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToastMessage(msg);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+      toastTimeoutRef.current = null;
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const switchTab = (
+    tab: "terminal" | "overview" | "spec" | "tokens" | "specimens" | "audits" | "pulse"
+  ) => {
+    setActiveTab(tab);
+  };
+
   useEffect(() => {
     if (activeSkill) {
       setCustomDesign(activeSkill);
-      setActiveTab("spec");
+      switchTab("spec");
       showToast(`Extracted ${activeSkill.title || activeSkill.name}!`);
     }
   }, [activeSkill]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 2000);
-  };
 
   const handleSelectSystem = (sysId: string) => {
     setActiveSystemId(sysId);
@@ -147,13 +222,11 @@ export function ProductWorkspaceShell({
   const handleToggleFavorite = () => {
     if (!currentDesign) return;
     const name = currentDesign.name;
-    if (favorites.includes(name)) {
-      setFavorites(favorites.filter((f) => f !== name));
-      showToast("Removed from favorites");
-    } else {
-      setFavorites([...favorites, name]);
-      showToast("Added to favorites");
-    }
+    setFavorites((prev) => {
+      const exists = prev.includes(name);
+      showToast(exists ? "Removed from favorites" : "Added to favorites");
+      return exists ? prev.filter((f) => f !== name) : [...prev, name];
+    });
   };
 
   const handleDownloadZip = async () => {
@@ -198,13 +271,13 @@ export function ProductWorkspaceShell({
     const cmd = `designmd extract ${target || "<url>"} --mode=deep`;
     navigator.clipboard.writeText(cmd);
     showToast(`CLI command copied: ${cmd}`);
-    setActiveTab("terminal");
+    switchTab("terminal");
   };
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNote.trim()) return;
-    setUserNotes([...userNotes, newNote.trim()]);
+    setUserNotes((prev) => [...prev, newNote.trim()]);
     setNewNote("");
     showToast("Note added");
   };
@@ -216,7 +289,7 @@ export function ProductWorkspaceShell({
         <div className="flex items-center justify-between px-1.5 py-1 text-white">
           <div
             onClick={() => {
-              setActiveTab("terminal");
+              switchTab("terminal");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
             className="flex items-center gap-2 font-semibold cursor-pointer group"
@@ -245,7 +318,7 @@ export function ProductWorkspaceShell({
               onClick={() => {
                 setActiveSystemId("");
                 setCustomDesign(null);
-                setActiveTab("terminal");
+                switchTab("terminal");
                 if (isMobile) setIsMobileSidebarOpen(false);
               }}
               title="New extraction"
@@ -270,113 +343,113 @@ export function ProductWorkspaceShell({
         <div className="space-y-1">
           <div
             onClick={() => {
-              setActiveTab("terminal");
+              switchTab("terminal");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "terminal"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-[#3186ff]" />
+            <Compass className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>URL Extractor</span>
           </div>
 
           <div
             onClick={() => {
-              setActiveTab("overview");
+              switchTab("overview");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "overview"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <FolderKanban className="w-3.5 h-3.5 text-[#5683da]" />
+            <FolderKanban className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Activity & Notes</span>
           </div>
 
           <div
             onClick={() => {
-              setActiveTab("pulse");
+              switchTab("pulse");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "pulse"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <Zap className="w-3.5 h-3.5 text-[#ffe432]" />
+            <Zap className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Pulse</span>
           </div>
 
           <div
             onClick={() => {
-              setActiveTab("audits");
+              switchTab("audits");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "audits"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <CheckSquare className="w-3.5 h-3.5 text-[#34A853]" />
+            <CheckSquare className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Audits</span>
           </div>
         </div>
 
         {/* WORKSPACE Section */}
         <div className="space-y-1 pt-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#585a5c] px-2 block">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#5e6473] px-2 block">
             Workspace
           </span>
 
           <div
             onClick={() => {
-              setActiveTab("spec");
+              switchTab("spec");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "spec"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#5683da]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Specifications</span>
           </div>
 
           <div
             onClick={() => {
-              setActiveTab("tokens");
+              switchTab("tokens");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "tokens"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-[#8b5cf6]" />
+            <Layers className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Tokens (JSON)</span>
           </div>
 
           <div
             onClick={() => {
-              setActiveTab("specimens");
+              switchTab("specimens");
               if (isMobile) setIsMobileSidebarOpen(false);
             }}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors border outline-none select-none ${
               activeTab === "specimens"
-                ? "bg-[#16181d] text-white font-medium border border-[#232730]"
-                : "hover:bg-white/5 text-[#8a8f98] hover:text-white"
+                ? "bg-[#161820] text-white font-medium border-[#20242f]"
+                : "border-transparent hover:bg-white/5 text-[#8a8f98] hover:text-white"
             }`}
           >
-            <Palette className="w-3.5 h-3.5 text-[#ffe432]" />
+            <Palette className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>Live Specimens</span>
           </div>
 
@@ -386,22 +459,22 @@ export function ProductWorkspaceShell({
               if (currentDesign) setIsAiExportOpen(true);
               else showToast("Extract a design system first");
             }}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/5 cursor-pointer text-[#8a8f98] hover:text-white transition-colors"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-transparent hover:bg-white/5 cursor-pointer text-[#8a8f98] hover:text-white transition-colors outline-none select-none"
           >
-            <FileText className="w-3.5 h-3.5 text-[#34A853]" />
+            <FileText className="w-3.5 h-3.5 text-[#3b82f6]" />
             <span>AI Prompts</span>
           </div>
         </div>
 
-        {/* FAVORITES Section (Clean, starts empty!) */}
+        {/* FAVORITES Section */}
         <div className="space-y-1 pt-2">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#585a5c] px-2 flex items-center justify-between">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#5e6473] px-2 flex items-center justify-between">
             <span>Favorites</span>
             <ChevronDown className="w-2.5 h-2.5" />
           </span>
 
           {favorites.length === 0 ? (
-            <div className="px-2 py-2 text-[11px] text-[#585a5c] font-mono italic">
+            <div className="px-2 py-2 text-[11px] text-[#5e6473] font-mono italic">
               No favorites yet
             </div>
           ) : (
@@ -412,9 +485,9 @@ export function ProductWorkspaceShell({
                   handleSelectSystem(fav);
                   if (isMobile) setIsMobileSidebarOpen(false);
                 }}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-white/5 text-white"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-white/5 text-white"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ffe432]" />
+                <Star className="w-3 h-3 text-[#3b82f6]" />
                 <span className="truncate">{fav}</span>
               </div>
             ))
@@ -471,14 +544,13 @@ export function ProductWorkspaceShell({
               title="View Splash Screen"
               className="flex items-center gap-1 px-2 py-1 rounded text-xs text-[#8a8f98] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ffe432]" />
               <span>Splash</span>
             </button>
           )}
         </div>
 
         <div className="px-2 text-[10px] font-mono text-[#585a5c]">
-          DesignMD Engine • Google Stitch
+          DesignMD Engine
         </div>
       </div>
     </>
@@ -487,12 +559,12 @@ export function ProductWorkspaceShell({
   return (
     <div
       style={{ fontFamily: "'Google Sans Flex', 'Google Sans', sans-serif" }}
-      className="w-screen h-screen flex bg-[#080808] text-[#ffffff] overflow-hidden select-none"
+      className="w-full h-[100dvh] min-h-[100dvh] flex bg-[#090a0d] text-[#ffffff] overflow-hidden select-none"
     >
       {/* ========================================================================= */}
       {/* 1. LEFT SIDEBAR (Desktop & Responsive Mobile Drawer)                      */}
       {/* ========================================================================= */}
-      <aside className="hidden md:flex md:w-56 lg:w-60 bg-[#090a0c] border-r border-[#191d20] flex-col justify-between shrink-0 text-xs text-[#8a8f98]">
+      <aside className="hidden md:flex md:w-56 lg:w-60 bg-[#090a0d] border-r border-[#191d20] flex-col justify-between shrink-0 text-xs text-[#8a8f98]">
         {renderSidebarContent(false)}
       </aside>
 
@@ -504,7 +576,7 @@ export function ProductWorkspaceShell({
             if (e.target === e.currentTarget) setIsMobileSidebarOpen(false);
           }}
         >
-          <aside className="w-64 max-w-[85vw] h-full bg-[#090a0c] border-r border-[#191d20] flex flex-col justify-between text-xs text-[#8a8f98] shadow-2xl animate-in slide-in-from-left duration-200">
+          <aside className="w-64 max-w-[85vw] h-full bg-[#090a0d] border-r border-[#191d20] flex flex-col justify-between text-xs text-[#8a8f98] shadow-2xl animate-in slide-in-from-left duration-200">
             {renderSidebarContent(true)}
           </aside>
         </div>
@@ -513,9 +585,9 @@ export function ProductWorkspaceShell({
       {/* ========================================================================= */}
       {/* 2. MAIN CANVAS VIEW                                                       */}
       {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#080808] overflow-hidden relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#090a0d] overflow-hidden relative">
         {/* Top Ticket & Tool Bar */}
-        <header className="h-11 sm:h-12 border-b border-[#191d20] px-4 sm:px-6 flex items-center justify-between text-xs text-[#8a8f98] shrink-0 bg-[#080808]/90 backdrop-blur-md">
+        <header className="h-11 sm:h-12 border-b border-[#191d20] px-4 sm:px-6 flex items-center justify-between text-xs text-[#8a8f98] shrink-0 bg-[#090a0d]/90 backdrop-blur-md">
           {/* Left Ticket Info */}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <button
@@ -526,13 +598,13 @@ export function ProductWorkspaceShell({
             >
               <Menu className="w-4 h-4" />
             </button>
-            <span className="text-[#ffe432] font-mono font-semibold flex items-center gap-1 shrink-0">
-              ◐ {currentDesign ? "DMD-2024" : "DMD-0001"}
+            <span className="text-blue-400 font-mono font-medium text-[11px] px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 shrink-0">
+              {currentDesign ? "ACTIVE" : "READY"}
             </span>
             <span className="text-white font-medium truncate max-w-[200px] sm:max-w-md">
               {currentDesign
                 ? `Extract ${currentDesign.name.replace(/_design$/, "")}.app design system`
-                : "New Extraction · Ready"}
+                : "New Extraction"}
             </span>
             {currentDesign && (
               <button
@@ -625,88 +697,88 @@ export function ProductWorkspaceShell({
             <div className="inline-flex items-center gap-1 p-1 bg-[#101215] border border-[#1e2126] rounded-full text-xs shrink-0">
               <button
                 type="button"
-                onClick={() => setActiveTab("terminal")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("terminal")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "terminal"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <TerminalIcon className="w-3 h-3 text-[#3186ff]" />
+                <TerminalIcon className={`w-3 h-3 ${activeTab === "terminal" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>Terminal Console</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab("overview")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("overview")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "overview"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <FolderKanban className="w-3 h-3 text-[#5683da]" />
+                <FolderKanban className={`w-3 h-3 ${activeTab === "overview" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>Activity & Notes</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab("spec")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("spec")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "spec"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <FileText className="w-3 h-3 text-[#34A853]" />
+                <FileText className={`w-3 h-3 ${activeTab === "spec" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>DESIGN.md Spec</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab("tokens")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("tokens")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "tokens"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <Layers className="w-3 h-3 text-[#8b5cf6]" />
+                <Layers className={`w-3 h-3 ${activeTab === "tokens" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>Tokens & Colors</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab("specimens")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("specimens")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "specimens"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <Palette className="w-3 h-3 text-[#ffe432]" />
+                <Palette className={`w-3 h-3 ${activeTab === "specimens" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>Live Specimens</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setActiveTab("audits")}
-                className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                onClick={() => switchTab("audits")}
+                className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer flex items-center gap-1.5 border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                   activeTab === "audits"
-                    ? "bg-[#1c1f24] text-white shadow-xs border border-[#2e333d]"
-                    : "text-[#8a8f98] hover:text-white"
+                    ? "bg-[#1c1f24] text-white shadow-xs border-[#2e333d]"
+                    : "border-transparent text-[#8a8f98] hover:text-white"
                 }`}
               >
-                <ShieldCheck className="w-3 h-3 text-[#34A853]" />
+                <ShieldCheck className={`w-3 h-3 ${activeTab === "audits" ? "text-blue-400" : "text-[#8a8f98]"}`} />
                 <span>Audits</span>
               </button>
             </div>
 
-            {currentDesign && (
+            {currentDesign ? (
               <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#585a5c]">
                 <span>Target: {currentDesign.targetUrl}</span>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* ========================================================================= */}
@@ -746,7 +818,7 @@ export function ProductWorkspaceShell({
                     </p>
                     <button
                       type="button"
-                      onClick={() => setActiveTab("terminal")}
+                      onClick={() => switchTab("terminal")}
                       className="px-4 py-2 rounded-full bg-[#16191f] text-[#3186ff] border border-[#3186ff]/30 text-xs font-semibold hover:bg-[#3186ff]/15 transition-colors cursor-pointer"
                     >
                       Open Terminal Console →
@@ -826,7 +898,7 @@ export function ProductWorkspaceShell({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("terminal")}
+                    onClick={() => switchTab("terminal")}
                     className="px-5 py-2 rounded-full bg-[#ffffff] text-[#000000] text-xs font-semibold hover:bg-[#eff0f3] transition-all cursor-pointer"
                   >
                     Open Terminal Console
@@ -879,7 +951,7 @@ export function ProductWorkspaceShell({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("terminal")}
+                    onClick={() => switchTab("terminal")}
                     className="px-5 py-2 rounded-full bg-[#ffffff] text-[#000000] text-xs font-semibold hover:bg-[#eff0f3] transition-all cursor-pointer"
                   >
                     Open Terminal Console
@@ -907,7 +979,7 @@ export function ProductWorkspaceShell({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("terminal")}
+                    onClick={() => switchTab("terminal")}
                     className="px-5 py-2 rounded-full bg-[#ffffff] text-[#000000] text-xs font-semibold hover:bg-[#eff0f3] transition-all cursor-pointer"
                   >
                     Open Terminal Console
@@ -933,7 +1005,7 @@ export function ProductWorkspaceShell({
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("terminal")}
+                    onClick={() => switchTab("terminal")}
                     className="px-5 py-2 rounded-full bg-[#ffffff] text-[#000000] text-xs font-semibold hover:bg-[#eff0f3] transition-all cursor-pointer"
                   >
                     Open Terminal Console
@@ -991,7 +1063,7 @@ export function ProductWorkspaceShell({
                 onClick={() => setIsAgentMinimized(false)}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#090a0d] border border-[#1e222a] shadow-2xl hover:border-[#3186ff]/50 text-xs text-white group cursor-pointer transition-all hover:scale-105"
               >
-                <span className="w-2 h-2 rounded-full bg-[#3186ff] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#3186ff]" />
                 <span className="font-medium">DesignMD Agent</span>
                 <span className="text-[10px] font-mono text-[#8a8f98] px-1.5 py-0.5 rounded bg-[#16191f] border border-[#232731]">
                   {isLoading ? "Running..." : currentDesign ? "Active" : "Ready"}
@@ -1010,7 +1082,7 @@ export function ProductWorkspaceShell({
                     </div>
                     <span className="text-xs font-semibold text-white">DesignMD</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#16191f] text-[#8a8f98] border border-[#232731]">
-                      v2.0 Synthesizer
+                      Synthesizer
                     </span>
                   </div>
 
@@ -1025,7 +1097,7 @@ export function ProductWorkspaceShell({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveTab("spec")}
+                      onClick={() => switchTab("spec")}
                       title="Open Spec View"
                       className="hover:text-white cursor-pointer transition-colors p-0.5"
                     >
@@ -1056,7 +1128,7 @@ export function ProductWorkspaceShell({
                       ◐
                     </span>
                     <span className="text-[10px] font-mono text-white/80 font-medium">
-                      {currentDesign ? "DMD-2024" : "DMD-0001"}
+                      {currentDesign ? currentDesign.name.replace(/_design$/, "") : "workspace"}
                     </span>
                     <span className="text-[10px] text-[#6b6c6d]">
                       {isLoading ? "processing stream" : currentDesign ? "active context" : "idle"}
@@ -1067,8 +1139,8 @@ export function ProductWorkspaceShell({
                 {/* Execution Details */}
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-1 text-[#6b6c6d] font-mono text-[11px]">
-                    <span className={isLoading ? "text-[#ffe432]" : currentDesign ? "text-[#34d399]" : "text-[#8a8f98]"}>
-                      {isLoading ? "Running step " + currentStep + "/4 ▶" : currentDesign ? "Extracted in 2.4 sec ▶" : "Waiting for execution"}
+                    <span className={isLoading ? "text-blue-400" : currentDesign ? "text-blue-400" : "text-[#8a8f98]"}>
+                      {isLoading ? `Running step ${currentStep}/4` : currentDesign ? "Extraction completed" : "Waiting for execution"}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#8a8f98] leading-relaxed">
@@ -1079,54 +1151,56 @@ export function ProductWorkspaceShell({
                 </div>
 
                 {/* Footer Execution Stats & Action */}
-                {currentDesign && (
+                {currentDesign ? (
                   <div className="pt-2 border-t border-[#1e222a] flex items-center justify-between text-xs font-mono">
                     <span className="text-[11px] text-[#6b6c6d]">
-                      Generated 1 file <span className="text-[#34d399]">+450 lines</span> 0 err
+                      DESIGN.md <span className="text-[#34d399]">{currentDesign.designMd ? `${currentDesign.designMd.split("\n").length} lines` : "generated"}</span>
                     </span>
 
                     <button
                       type="button"
-                      onClick={() => setActiveTab("spec")}
+                      onClick={() => switchTab("spec")}
                       className="px-2.5 py-1 rounded-md bg-[#16191f] text-white hover:bg-[#20242c] border border-[#232731] hover:border-[#3186ff]/40 transition-all flex items-center gap-1 cursor-pointer text-[11px]"
                     >
                       <Eye className="w-3 h-3 text-[#3186ff]" />
                       <span>Preview Spec</span>
                     </button>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           )
         )}
 
         {/* Floating Toast Message */}
-        {toastMessage && (
+        {toastMessage ? (
           <div className="fixed top-14 right-6 z-50 px-4 py-2 rounded-xl bg-[#1a1d24] text-white text-xs border border-[#3186ff]/40 shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
             <Check className="w-3.5 h-3.5 text-[#34d399]" />
             <span>{toastMessage}</span>
           </div>
-        )}
+        ) : null}
       </main>
 
       {/* ========================================================================= */}
       {/* 5. MODALS & DRAWERS                                                       */}
       {/* ========================================================================= */}
-      <ConfigDrawer
-        isOpen={isConfigOpen}
-        onClose={() => setIsConfigOpen(false)}
-        config={config}
-        onSaveConfig={onSaveConfig}
-      />
+      {isConfigOpen ? (
+        <ConfigDrawer
+          isOpen={isConfigOpen}
+          onClose={() => setIsConfigOpen(false)}
+          config={config}
+          onSaveConfig={onSaveConfig}
+        />
+      ) : null}
 
-      {currentDesign && (
+      {currentDesign && isAiExportOpen ? (
         <ModelExportModal
           isOpen={isAiExportOpen}
           onClose={() => setIsAiExportOpen(false)}
           skill={currentDesign}
           onDownloadZip={handleDownloadZip}
         />
-      )}
+      ) : null}
 
       {/* Quick Search Palette (Cmd+K) */}
       {isSearchOpen && (
@@ -1171,7 +1245,6 @@ export function ProductWorkspaceShell({
                   className="p-2.5 rounded-lg hover:bg-white/5 cursor-pointer flex items-center justify-between transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#ffe432]" />
                     <span className="font-semibold text-white">{s.name}</span>
                     <span className="text-[#8a8f98] font-mono text-[11px]">{s.tag}</span>
                   </div>

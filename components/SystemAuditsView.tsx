@@ -8,7 +8,7 @@ export interface SystemAuditsViewProps {
   design: DesignSystemData;
 }
 
-export function SystemAuditsView({ design }: SystemAuditsViewProps) {
+export const SystemAuditsView = React.memo(function SystemAuditsView({ design }: SystemAuditsViewProps) {
   const colors = design.semanticColors || [];
   const primary = colors.find((c) => c.role === "primary") || colors[0];
   const bg = colors.find((c) => c.role === "background") || { hex: "#080808", name: "Obsidian Canvas" };
@@ -17,7 +17,7 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
   return (
     <div className="space-y-6 text-left">
       {/* Top Banner Scorecard */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 bg-[#090b0e] border border-[#1e2229] rounded-xl flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-lg bg-[#34A853]/15 border border-[#34A853]/30 flex items-center justify-center text-[#34A853]">
             <ShieldCheck className="w-5 h-5" />
@@ -29,7 +29,17 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
         </div>
 
         <div className="p-4 bg-[#090b0e] border border-[#1e2229] rounded-xl flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-lg bg-[#3186ff]/15 border border-[#3186ff]/30 flex items-center justify-center text-[#3186ff]">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-base sm:text-lg font-bold text-white tracking-tight font-mono">R = r + p</div>
+            <div className="text-xs text-[#8a8f98]">Concentric Border Radius</div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-[#090b0e] border border-[#1e2229] rounded-xl flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Type className="w-5 h-5" />
           </div>
           <div>
@@ -39,12 +49,12 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
         </div>
 
         <div className="p-4 bg-[#090b0e] border border-[#1e2229] rounded-xl flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-lg bg-[#ffe432]/15 border border-[#ffe432]/30 flex items-center justify-center text-[#ffe432]">
+          <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xl font-bold text-white tracking-tight">Stitch v2.0</div>
-            <div className="text-xs text-[#8a8f98]">AI Agent Prompt Format</div>
+            <div className="text-xl font-bold text-white tracking-tight">AGENTS.md</div>
+            <div className="text-xs text-[#8a8f98]">Agent Spec Format</div>
           </div>
         </div>
       </div>
@@ -76,6 +86,21 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
             </div>
             <span className="px-2 py-1 rounded bg-[#34A853]/15 text-[#34A853] font-mono text-[11px] shrink-0 font-medium">
               PASS (AAA)
+            </span>
+          </div>
+
+          <div className="p-4 flex items-start justify-between gap-4 hover:bg-white/[0.02] transition-colors">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-4 h-4 text-[#34A853] shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold text-white">Concentric Border Radius Rule (Outer R = Inner R + Padding)</div>
+                <div className="text-[#8a8f98] mt-0.5">
+                  Nested containers maintain concentric geometry: Outer R = Inner R + Padding (Inner R = max(0, Outer R - Padding)). Prevents pinched, uneven corner margins.
+                </div>
+              </div>
+            </div>
+            <span className="px-2 py-1 rounded bg-[#34A853]/15 text-[#34A853] font-mono text-[11px] shrink-0 font-medium">
+              PASS (CONCENTRIC)
             </span>
           </div>
 
@@ -115,7 +140,7 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
               <div>
                 <div className="font-semibold text-white">Autonomous Agent Formatting</div>
                 <div className="text-[#8a8f98] mt-0.5">
-                  Tokens exported into .cursorrules, CLAUDE.md, and Google Stitch specification format for immediate code generation.
+                  Tokens exported into .cursorrules, CLAUDE.md, and DESIGN.md specification format for immediate code generation.
                 </div>
               </div>
             </div>
@@ -127,6 +152,6 @@ export function SystemAuditsView({ design }: SystemAuditsViewProps) {
       </div>
     </div>
   );
-}
+});
 
 export default SystemAuditsView;

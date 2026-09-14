@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Copy,
   Check,
@@ -21,17 +21,27 @@ export interface DesignMdViewerProps {
   design: DesignSystemData;
 }
 
-export function DesignMdViewer({ design }: DesignMdViewerProps) {
+export const DesignMdViewer = React.memo(function DesignMdViewer({ design }: DesignMdViewerProps) {
   const [activeTab, setActiveTab] = useState<"formatted" | "raw" | "palette" | "typography" | "pages">("formatted");
   const [copied, setCopied] = useState(false);
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hexTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (hexTimeoutRef.current) clearTimeout(hexTimeoutRef.current);
+    };
+  }, []);
 
   const designMdContent = design.designMd || design.skillMd || "";
 
   const handleCopyDesignMd = () => {
     navigator.clipboard.writeText(designMdContent);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   const handleDownloadDesignMd = () => {
@@ -47,7 +57,8 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
   const copyColor = (hex: string) => {
     navigator.clipboard.writeText(hex);
     setCopiedHex(hex);
-    setTimeout(() => setCopiedHex(null), 1200);
+    if (hexTimeoutRef.current) clearTimeout(hexTimeoutRef.current);
+    hexTimeoutRef.current = setTimeout(() => setCopiedHex(null), 1200);
   };
 
   return (
@@ -58,65 +69,65 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
           <button
             type="button"
             onClick={() => setActiveTab("formatted")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "formatted"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Eye className="w-3.5 h-3.5 text-[#3186ff]" />
+            <Eye className={`w-3.5 h-3.5 ${activeTab === "formatted" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>DESIGN.md</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("raw")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "raw"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Code className="w-3.5 h-3.5 text-[#9aa0a6]" />
+            <Code className={`w-3.5 h-3.5 ${activeTab === "raw" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Raw</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("palette")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "palette"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Palette className="w-3.5 h-3.5 text-[#ffe432]" />
+            <Palette className={`w-3.5 h-3.5 ${activeTab === "palette" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Palette ({design.semanticColors?.length || 0})</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("typography")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "typography"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
             }`}
           >
-            <Type className="w-3.5 h-3.5 text-[#34A853]" />
+            <Type className={`w-3.5 h-3.5 ${activeTab === "typography" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
             <span>Type Scale</span>
           </button>
-          {design.crawledPages && design.crawledPages.length > 1 && (
+          {design.crawledPages && design.crawledPages.length > 1 ? (
             <button
               type="button"
               onClick={() => setActiveTab("pages")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
                 activeTab === "pages"
-                  ? "bg-[#1e2026] text-white shadow-xs border border-[#3186ff]/40 font-semibold"
-                  : "text-[#9aa0a6] hover:text-white hover:bg-white/5"
+                  ? "bg-[#1e2026] text-white shadow-xs border-blue-500/40 font-semibold"
+                  : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-white/5"
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-[#3186ff]" />
+              <Compass className={`w-3.5 h-3.5 ${activeTab === "pages" ? "text-blue-400" : "text-[#9aa0a6]"}`} />
               <span>Explored ({design.crawledPages.length})</span>
             </button>
-          )}
+          ) : null}
         </div>
 
         {/* Quick Toolbar */}
@@ -154,15 +165,15 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
         {/* Formatted View */}
         {activeTab === "formatted" && (
           <div className="space-y-4">
-            {design.aestheticSummary && (
+            {design.aestheticSummary ? (
               <div className="p-3.5 rounded-xl bg-[#121316] border border-[#262930] text-xs text-[#9aa0a6] flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-[#ffe432] shrink-0 mt-0.5" />
+                <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-semibold text-white">Aesthetic Profile: </span>
                   <span>{design.aestheticSummary}</span>
                 </div>
               </div>
-            )}
+            ) : null}
             <MarkdownView content={designMdContent} />
           </div>
         )}
@@ -210,7 +221,7 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
                     <p className="text-[11px] text-[#9aa0a6] truncate mt-0.5">
                       {c.usage}
                     </p>
-                    <div className="flex items-center justify-between text-[11px] font-mono text-[#3186ff] mt-1">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-blue-400 mt-1">
                       <span>{c.hex.toUpperCase()}</span>
                       {copiedHex === c.hex ? (
                         <Check className="w-3 h-3 text-[#34A853]" />
@@ -231,7 +242,7 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
             <div>
               <h3 className="text-sm font-semibold text-white">Typography Hierarchy & Scale</h3>
               <p className="text-xs text-[#9aa0a6] mt-0.5">
-                Primary: <span className="text-white font-mono">{design.primaryFont}</span> • Code:{" "}
+                Primary: <span className="text-white font-mono">{design.primaryFont}</span> / Code:{" "}
                 <span className="text-white font-mono">{design.monoFont}</span>
               </p>
             </div>
@@ -266,7 +277,7 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
         )}
 
         {/* Explored Pages Tab */}
-        {activeTab === "pages" && design.crawledPages && (
+        {activeTab === "pages" && design.crawledPages ? (
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-semibold text-white">Discovered Site Architecture</h3>
@@ -299,10 +310,10 @@ export function DesignMdViewer({ design }: DesignMdViewerProps) {
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
-}
+});
 
 export default DesignMdViewer;

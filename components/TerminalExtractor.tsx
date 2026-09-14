@@ -49,7 +49,7 @@ export function TerminalExtractor({
   }, [config?.defaultCrawlDepth]);
   const [logs, setLogs] = useState<Array<{ text: string; type: "info" | "success" | "warn" | "error" | "cmd"; time: string }>>([
     {
-      text: "DesignMD CLI v2.0 initialized. Ready for multi-page extraction.",
+      text: "DesignMD CLI initialized. Ready for multi-page extraction.",
       type: "info",
       time: new Date().toLocaleTimeString(),
     },
@@ -145,7 +145,7 @@ export function TerminalExtractor({
             <span>designmd-cli</span>
           </span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#16191f] text-[#9aa0a6] border border-[#232731]">
-            v2.0-engine
+            engine
           </span>
         </div>
 
@@ -157,11 +157,11 @@ export function TerminalExtractor({
               onClick={() => setCrawlMode("deep")}
               className={`px-2.5 py-0.5 rounded-full font-medium transition-all flex items-center gap-1 cursor-pointer ${
                 crawlMode === "deep"
-                  ? "bg-[#191d24] text-[#3186ff] border border-[#3186ff]/30 font-semibold"
+                  ? "bg-[#191d24] text-blue-400 border border-blue-500/30 font-semibold"
                   : "text-[#8a8f98] hover:text-white"
               }`}
             >
-              <Compass className="w-2.5 h-2.5 text-[#3186ff]" />
+              <Compass className="w-2.5 h-2.5 text-blue-400" />
               <span>--deep ({maxPages} pages)</span>
             </button>
             <button
@@ -169,11 +169,11 @@ export function TerminalExtractor({
               onClick={() => setCrawlMode("fast")}
               className={`px-2.5 py-0.5 rounded-full font-medium transition-all flex items-center gap-1 cursor-pointer ${
                 crawlMode === "fast"
-                  ? "bg-[#191d24] text-[#ffe432] border border-[#ffe432]/30 font-semibold"
+                  ? "bg-[#191d24] text-blue-400 border border-blue-500/30 font-semibold"
                   : "text-[#8a8f98] hover:text-white"
               }`}
             >
-              <Zap className="w-2.5 h-2.5 text-[#ffe432]" />
+              <Zap className="w-2.5 h-2.5 text-blue-400" />
               <span>--fast (single)</span>
             </button>
           </div>
@@ -205,11 +205,11 @@ export function TerminalExtractor({
         <button
           type="submit"
           disabled={isLoading || !inputUrl.trim()}
-          className="px-3.5 py-1.5 rounded-lg bg-[#ffffff] hover:bg-[#eff0f3] disabled:bg-[#191c22] disabled:text-[#585a5c] text-[#000000] text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all hover:scale-102 active:scale-98 cursor-pointer shrink-0"
+          className="px-3.5 py-1.5 rounded-lg bg-[#ffffff] hover:bg-[#eff0f3] disabled:bg-[#191c22] disabled:text-[#585a5c] text-[#000000] text-xs font-semibold flex items-center gap-1.5 shadow-md transition-colors cursor-pointer shrink-0"
         >
           {isLoading ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-[#3186ff] animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-[#3186ff]" />
               <span>Synthesizing...</span>
             </>
           ) : (

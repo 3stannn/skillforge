@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   Copy,
   Check,
@@ -21,23 +21,25 @@ export interface ComponentCodeViewerProps {
   skill: UniversalSkill;
 }
 
-export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
+export const ComponentCodeViewer = React.memo(function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
   const [activeTab, setActiveTab] = useState<"component" | "prompts" | "source">("component");
   const [activeModel, setActiveModel] = useState<"gemini" | "cursor" | "chatgpt" | "claude">("gemini");
   const [sourceMode, setSourceMode] = useState<"rendered" | "raw">("rendered");
   const [editorTheme, setEditorTheme] = useState<"light" | "dark">("dark");
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   const code = skill.componentCode || "// Generating component code...";
 
-  const currentPrompt =
-    activeModel === "gemini"
-      ? skill.modelPrompts.gemini
-      : activeModel === "cursor"
-      ? skill.modelPrompts.cursor
-      : activeModel === "chatgpt"
-      ? skill.modelPrompts.chatgpt
-      : skill.modelPrompts.claude;
+  const currentPrompt = useMemo(() => {
+    return skill.modelPrompts[activeModel] || "";
+  }, [skill.modelPrompts, activeModel]);
 
   const handleCopy = () => {
     let textToCopy = "";
@@ -51,7 +53,8 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
 
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   const handleDownload = () => {
@@ -82,7 +85,7 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
     }
   };
 
-  const lines = code.split("\n");
+  const lines = useMemo(() => code.split("\n"), [code]);
 
   return (
     <div className="flex flex-col h-full bg-[#0a0b0e] border border-[#262930] rounded-2xl overflow-hidden shadow-xs">
@@ -93,10 +96,10 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
           <button
             type="button"
             onClick={() => setActiveTab("component")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "component"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3c4043] font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
+                ? "bg-[#1e2026] text-white shadow-xs border-[#3c4043] font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
             }`}
           >
             <Terminal className="w-3.5 h-3.5 text-[#3186ff]" />
@@ -105,10 +108,10 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
           <button
             type="button"
             onClick={() => setActiveTab("prompts")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "prompts"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3c4043] font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
+                ? "bg-[#1e2026] text-white shadow-xs border-[#3c4043] font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#ffe432]" />
@@ -117,10 +120,10 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
           <button
             type="button"
             onClick={() => setActiveTab("source")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ${
               activeTab === "source"
-                ? "bg-[#1e2026] text-white shadow-xs border border-[#3c4043] font-semibold"
-                : "text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
+                ? "bg-[#1e2026] text-white shadow-xs border-[#3c4043] font-semibold"
+                : "border-transparent text-[#9aa0a6] hover:text-white hover:bg-[#16181d]"
             }`}
           >
             <FileText className="w-3.5 h-3.5 text-[#9aa0a6]" />
@@ -130,7 +133,7 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
 
         {/* Right Tools: Theme toggle, Download, Copy */}
         <div className="flex items-center gap-1.5">
-          {activeTab === "component" && (
+          {activeTab === "component" ? (
             <button
               type="button"
               onClick={() => setEditorTheme(editorTheme === "light" ? "dark" : "light")}
@@ -143,7 +146,7 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
                 <Sun className="w-3.5 h-3.5 text-[#ffe432]" />
               )}
             </button>
-          )}
+          ) : null}
 
           <button
             type="button"
@@ -283,26 +286,26 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
 
             {/* Model Target Guidance Card */}
             <div className="p-3 bg-[#121316] border border-[#262930] rounded-xl text-xs text-[#9aa0a6] font-mono leading-relaxed">
-              {activeModel === "gemini" && (
+              {activeModel === "gemini" ? (
                 <p>
                   <strong className="text-white">Google Gemini:</strong> Paste into Google AI Studio (System Instructions) or your Gemini API backend system instructions.
                 </p>
-              )}
-              {activeModel === "cursor" && (
+              ) : null}
+              {activeModel === "cursor" ? (
                 <p>
                   <strong className="text-white">Cursor & Windsurf:</strong> Save directly as <code className="text-[#3186ff] font-bold">.cursorrules</code> in the root of your workspace.
                 </p>
-              )}
-              {activeModel === "chatgpt" && (
+              ) : null}
+              {activeModel === "chatgpt" ? (
                 <p>
                   <strong className="text-white">ChatGPT:</strong> Paste into the Custom GPT &quot;Instructions&quot; field or ChatGPT project instructions.
                 </p>
-              )}
-              {activeModel === "claude" && (
+              ) : null}
+              {activeModel === "claude" ? (
                 <p>
                   <strong className="text-white">Claude:</strong> Add to Claude Project Knowledge or the prompt system instructions block.
                 </p>
-              )}
+              ) : null}
             </div>
 
             {/* Prompt Content Box */}
@@ -371,4 +374,6 @@ export function ComponentCodeViewer({ skill }: ComponentCodeViewerProps) {
       </div>
     </div>
   );
-}
+});
+
+export default ComponentCodeViewer;

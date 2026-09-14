@@ -113,6 +113,15 @@ function createTurndownService(): TurndownService {
   return turndown;
 }
 
+let cachedTurndownService: TurndownService | null = null;
+
+function getTurndownService(): TurndownService {
+  if (!cachedTurndownService) {
+    cachedTurndownService = createTurndownService();
+  }
+  return cachedTurndownService;
+}
+
 /**
  * Fetch external CSS stylesheets linked in the document head
  */
@@ -1041,7 +1050,7 @@ export async function scrapeSinglePage(
     console.warn("Readability parsing error, falling back to Cheerio:", err);
   }
 
-  const turndown = createTurndownService();
+  const turndown = getTurndownService();
   let markdown = "";
   let source: "local_readability" | "local_cheerio" = "local_readability";
 

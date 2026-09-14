@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DesignMD • Generate DESIGN.md from Any Website",
+  title: "DesignMD - Generate DESIGN.md from Any Website",
   description:
     "Explore any website and generate a spec-compliant DESIGN.md with design principles, semantic colors, typography scale, component specs, and exportable tokens for Cursor, Claude Code, Gemini, and ChatGPT.",
 };
@@ -22,8 +22,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-[#000000] text-[#ffffff] antialiased flex flex-col selection:bg-[#1a73e8]/30 selection:text-[#3186ff]">
-        <main className="flex-1">{children}</main>
+      <body className="min-h-[100dvh] bg-[#090a0d] text-[#f4f5f8] antialiased flex flex-col selection:bg-[#3b82f6]/25 selection:text-[#60a5fa]">
+        <main className="flex-1 min-h-[100dvh]">{children}</main>
       </body>
     </html>
   );
